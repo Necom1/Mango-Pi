@@ -1,0 +1,6 @@
+{
+  "token": "",
+  "prefix": "[]",
+  "DB-address": "mongodb://localhost:27017/",
+  "DB-cluster": "discord-bot"
+}
