@@ -1,4 +1,3 @@
-import re
 import discord
 import asyncio
 import datetime
@@ -17,7 +16,7 @@ def setup(bot: commands.Bot):
         pass in bot reference to append the Cog
     """
     bot.add_cog(Reminder(bot))
-    print("Loaded Cog:\tReminder")
+    print("Load Cog:\tReminder")
 
 
 def teardown(bot: commands.Bot):
@@ -30,7 +29,7 @@ def teardown(bot: commands.Bot):
         pass in bot reference to unload the Cog
     """
     bot.remove_cog("Test")
-    print("Unloaded Cog:\tReminder")
+    print("Unload Cog:\tReminder")
 
 
 async def dm_remind(bot: commands.Bot, user_id: int, details: str, late: bool = False):
@@ -85,7 +84,7 @@ class RemindTimer(DelayedTask):
         ID for the reminder (the message ID sent by the user as reminder request)
     """
     def __init__(self, bot: commands.Bot, me: int = None, end: datetime.datetime = None, details: str = None,
-                 user: int = None, pack=None):
+                 user: int = None, pack: dict = None):
         """
         Constructor for RemindTimer that takes in bot, me, end, details, and user information; or bot and pack. This
         constructor will start the scheduled task.
@@ -190,7 +189,7 @@ class Reminder(commands.Cog):
         for i in late_reminders:
             asyncio.get_event_loop().create_task(dm_remind(self.bot, i['user_id'], i['details'], True))
 
-    @commands.command(aliases=['rm', 'remindme'])
+    @commands.command(aliases=['remindme'])
     async def remind_me(self, ctx: commands.Context, time: str, *, remind: str = ""):
         """Commands that sets reminder for user. Maximum of 10 reminders."""
         if self.bot.ignore_check(ctx):
@@ -217,7 +216,7 @@ class Reminder(commands.Cog):
         self.db.insert_one({"_id": ctx.message.id, "user_id": ctx.author.id, "details": remind, "end": end})
         await ctx.message.add_reaction(emoji='👌')
 
-    @commands.group(aliases=[])
+    @commands.group(aliases=['reminders'])
     async def reminder(self, ctx: commands.Context):
         """Group command that will list all the reminders if not additional sub-command are received."""
         if self.bot.ignore_check(ctx):

@@ -312,7 +312,7 @@ def setup(bot: commands.Bot):
         pass in bot reference to add Cog
     """
     bot.add_cog(ModTools(bot))
-    print("Loaded Cog:\tModTools")
+    print("Load Cog:\tModTools")
 
 
 def teardown(bot: commands.Bot):
@@ -325,4 +325,4 @@ def teardown(bot: commands.Bot):
         pass in bot reference to remove Cog
     """
     bot.remove_cog("ModTools")
-    print("Unloaded Cog:\tModTools")
+    print("Unload Cog:\tModTools")

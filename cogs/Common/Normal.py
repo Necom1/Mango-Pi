@@ -381,7 +381,7 @@ def setup(bot: commands.Bot):
         pass in bot reference to add Cog
     """
     bot.add_cog(Normal(bot))
-    print("Loaded Cog:\tNormal")
+    print("Load Cog:\tNormal")
 
 
 def teardown(bot: commands.Bot):
@@ -394,4 +394,4 @@ def teardown(bot: commands.Bot):
         pass in bot reference to remove Cog
     """
     bot.remove_cog("Normal")
-    print("Unloaded Cog:\tNormal")
+    print("Unload Cog:\tNormal")

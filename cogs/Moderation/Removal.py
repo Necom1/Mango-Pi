@@ -16,7 +16,7 @@ def setup(bot: commands.Bot):
         pass in bot reference to add Cog
     """
     bot.add_cog(Removal(bot))
-    print("Loaded Cog:\tRemoval")
+    print("Load Cog:\tRemoval")
 
 
 def teardown(bot: commands.Bot):
@@ -29,7 +29,7 @@ def teardown(bot: commands.Bot):
         pass in bot reference to remove Cog
     """
     bot.remove_cog("Removal")
-    print("Unloaded Cog:\tRemoval")
+    print("Unload Cog:\tRemoval")
 
 
 async def ban_over(bot: commands.Bot, guild_id: int, user_id: int, reason: str, late: bool = False):
@@ -93,7 +93,7 @@ class TemporaryBan(DelayedTask):
     """
 
     def __init__(self, bot: commands.Bot, me: int = None, guild_id: int = None, user_id: int = None,
-                 end: datetime.datetime = None, reason: str = "", pack=None):
+                 end: datetime.datetime = None, reason: str = "", pack: dict = None):
         """
         Constructor for TemporaryBan class which also starts the temporary ban timer.
 

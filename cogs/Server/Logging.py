@@ -18,7 +18,7 @@ class Notify:
     data : dict
         dictionary storing booleans that dictates what information will show up on the log channel
     """
-    def __init__(self, package):
+    def __init__(self, package: dict):
         """
         Constructor for Notify class.
 
@@ -691,7 +691,7 @@ def setup(bot: commands.Bot):
         pass in bot reference to add Cog
     """
     bot.add_cog(Logging(bot))
-    print("Loaded Cog:\tLogging")
+    print("Load Cog:\tLogging")
 
 
 def teardown(bot: commands.Bot):
@@ -704,4 +704,4 @@ def teardown(bot: commands.Bot):
         pass in bot reference to remove Cog and restore command_prefix
     """
     bot.remove_cog("Logging")
-    print("Unloaded Cog:\tLogging")
+    print("Unload Cog:\tLogging")

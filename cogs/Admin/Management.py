@@ -176,7 +176,7 @@ def setup(bot: commands.Bot):
         pass in bot reference to add Cog
     """
     bot.add_cog(Management(bot))
-    print("Loaded Cog:\tManagement")
+    print("Load Cog:\tManagement")
 
 
 def teardown(bot: commands.Bot):
@@ -189,4 +189,4 @@ def teardown(bot: commands.Bot):
         pass in bot reference to remove Cog
     """
     bot.remove_cog("Management")
-    print("Unloaded Cog:\tManagement")
+    print("Unload Cog:\tManagement")

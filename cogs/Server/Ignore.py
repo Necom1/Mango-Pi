@@ -159,7 +159,7 @@ def setup(bot: commands.Bot):
     temp.update()
     bot.add_cog(temp)
     bot.ignore_check = temp.ignore_check
-    print("Loaded Cog:\tIgnore")
+    print("Load Cog:\tIgnore")
 
 
 def teardown(bot: commands.Bot):
@@ -173,7 +173,7 @@ def teardown(bot: commands.Bot):
     """
     bot.remove_cog("Ignores")
     bot.ignore_check = offline
-    print("Unloaded Cog:\tIgnore")
+    print("Unload Cog:\tIgnore")
 
 
 def offline(ctx: commands.Context, ignore_dm: bool = False):

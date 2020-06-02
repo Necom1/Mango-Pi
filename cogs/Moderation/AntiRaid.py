@@ -15,7 +15,7 @@ def setup(bot: commands.Bot):
         pass in bot reference to add Cog
     """
     bot.add_cog(AntiRaid(bot))
-    print("Loaded Cog:\tAntiRaid")
+    print("Load Cog:\tAntiRaid")
 
 
 def teardown(bot: commands.Bot):
@@ -28,7 +28,7 @@ def teardown(bot: commands.Bot):
         pass in bot reference to remove Cog
     """
     bot.remove_cog("AntiRaid")
-    print("Unloaded Cog:\tAntiRaid")
+    print("Unload Cog:\tAntiRaid")
 
 
 def to_mention_list(data: list):
@@ -93,7 +93,7 @@ class RaidFilter:
     role: discord.Role
         the raider role reference for that server
     """
-    def __init__(self, bot: commands.Bot, package):
+    def __init__(self, bot: commands.Bot, package: dict):
         """
         Constructor for RaidFilter class
 

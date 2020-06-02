@@ -15,7 +15,7 @@ def setup(bot: commands.Bot):
         pass in bot reference to add Cog
     """
     bot.add_cog(Mute(bot))
-    print("Loaded Cog: Mute")
+    print("Load Cog:\tMute")
 
 
 def teardown(bot: commands.Bot):
@@ -28,7 +28,7 @@ def teardown(bot: commands.Bot):
         pass in bot reference to remove Cog
     """
     bot.remove_cog("Mute")
-    print("Unloaded Cog: Mute")
+    print("Unload Cog:\tMute")
 
 
 async def remove_mute(bot: commands.Bot, guild: int, target: int, reason: str = "Mute time expired"):
@@ -91,7 +91,7 @@ class MuteTimer(DelayedTask):
     """
 
     def __init__(self, bot: commands.Bot, guild_id: int = None, user_id: int = None, end: datetime.datetime = None,
-                 reason: str = "", pack=None):
+                 reason: str = "", pack: dict = None):
         """
         Constructor for MuteTimer class
 

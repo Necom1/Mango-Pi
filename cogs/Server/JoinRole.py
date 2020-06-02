@@ -14,7 +14,7 @@ def setup(bot: commands.Bot):
         pass in bot reference to add Cog
     """
     bot.add_cog(JoinRole(bot))
-    print("Loaded Cog: JoinRole")
+    print("Load Cog:\tJoinRole")
 
 
 def teardown(bot: commands.Bot):
@@ -27,7 +27,7 @@ def teardown(bot: commands.Bot):
         pass in bot reference to remove Cog
     """
     bot.remove_cog("JoinRole")
-    print("Unloaded Cog: JoinRole")
+    print("Unload Cog:\tJoinRole")
 
 
 class AutoRole:
@@ -45,7 +45,7 @@ class AutoRole:
     roles: list
         list of discord.Role to assign to new incoming members
     """
-    def __init__(self, bot: commands.Bot, package):
+    def __init__(self, bot: commands.Bot, package: dict):
         """
         Constructor for AutoRole class.
 
@@ -100,7 +100,7 @@ class AutoRole:
                 self.roles_id.remove(i)
         return ret
 
-    def to_string(self):
+    def to_str(self):
         """
         Method that converts roles within the system into mention sting
 
@@ -238,10 +238,10 @@ class JoinRole(commands.Cog):
     async def list(self, ctx: commands.Context):
         """List the roles within the Join Role system"""
         data = self.search(ctx.guild.id)
-        if not data:
+        if not isinstance(data, AutoRole):
             await ctx.send("Join role system not set")
         else:
-            temp = data.to_string()
+            temp = data.to_str()
             status = "Join role list " + ("[On]" if data.power else "[Off]")
             await ctx.send(embed=discord.Embed(
                 title=status,

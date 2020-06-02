@@ -14,7 +14,7 @@ def setup(bot: commands.Bot):
         pass in bot reference to add Cog
     """
     bot.add_cog(Warn(bot))
-    print("Loaded Cog: Warn")
+    print("Load Cog:\tWarn")
 
 
 def teardown(bot: commands.Bot):
@@ -27,7 +27,7 @@ def teardown(bot: commands.Bot):
         pass in bot reference to remove Cog
     """
     bot.remove_cog("Warn")
-    print("Unloaded Cog: Warn")
+    print("Unload Cog:\tWarn")
 
 
 class Warn(commands.Cog):

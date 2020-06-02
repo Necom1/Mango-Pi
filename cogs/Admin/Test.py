@@ -10,12 +10,12 @@ from cogs.Admin.Management import is_admin
 
 def setup(bot: commands.Bot):
     bot.add_cog(Test(bot))
-    print("Loaded Cog:\tTest")
+    print("Load Cog:\tTest")
 
 
 def teardown(bot: commands.Bot):
     bot.remove_cog("Test")
-    print("Unloaded Cog:\tTest")
+    print("Unload Cog:\tTest")
 
 
 class Test(commands.Cog):

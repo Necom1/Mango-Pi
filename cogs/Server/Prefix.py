@@ -137,7 +137,7 @@ def setup(bot: commands.Bot):
     temp.update()
     bot.add_cog(temp)
     bot.command_prefix = temp.get_prefix
-    print("Loaded Cog:\tPrefix")
+    print("Load Cog:\tPrefix")
 
 
 def teardown(bot: commands.Bot):
@@ -151,4 +151,4 @@ def teardown(bot: commands.Bot):
     """
     bot.command_prefix = commands.when_mentioned_or(bot.defaultPre)
     bot.remove_cog("Prefix")
-    print("Unloaded Cog:\tPrefix")
+    print("Unload Cog:\tPrefix")
