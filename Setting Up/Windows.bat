@@ -5,5 +5,5 @@ py -3 -m pip install -U pytz
 py -3 -m pip install -U requests
 py -3 -m pip install -U pymongo
 
-echo Done!
+echo. & echo. & echo Done! & echo.
 pause

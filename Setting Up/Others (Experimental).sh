@@ -1,12 +1,12 @@
-if [[ "$OSTYPE" == "WINDOWS" ]]; then
-	py -3 -m pip install -U discord.py[voice]
-	py -3 -m pip install -U dnspython
-	py -3 -m pip install -U pytz
-	py -3 -m pip install -U requests
-	py -3 -m pip install -U pymongo
+if [[ "$OSTYPE" == "Linux" ]]; then
+  var="python3 -m pip install -U"
 else
-	python3 -m pip install -U discord.py[voice]
-	python3 -m pip install -U dnspython
-	python3 -m pip install -U pytz
-	python3 -m pip install -U requests
-	python3 -m pip install -U pymongo
+  var="py -m pip install -U"
+fi
+
+echo "$OSTYPE"
+$var discord.py[voice]
+$var dnspython
+$var pytz
+$var requests
+$var pymongo
