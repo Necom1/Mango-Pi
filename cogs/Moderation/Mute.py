@@ -2,7 +2,7 @@ import discord
 import asyncio
 import datetime
 from discord.ext import commands
-from misc.Blueprints import DelayedTask, time_converter
+from misc.Blueprints import DelayedTask, time_converter, range_calculator
 
 
 def setup(bot: commands.Bot):
@@ -294,7 +294,7 @@ class Mute(commands.Cog):
 
         try:
             destination = self.bot.get_cog("Warn")
-            data = destination.add_warn(ctx.message.created_at, ctx.guild.id, target.id, None, 2, reason,
+            data = destination.add_warn(ctx.message.created_at, ctx.guild.id, target.id, ctx.author.id, 2, reason,
                                         duration)
         except ValueError:
             data = None
@@ -592,16 +592,13 @@ class Mute(commands.Cog):
         except KeyError:
             return await ctx.send("Mute list is empty")
 
-        limit = 10
-        total_page = (len(data) // limit) + 1
-        start = 0 if page == 1 else (limit * (page - 1))
-        end = len(data) if start + limit >= len(data) else start + limit
+        start, end, total = range_calculator(10, len(data), page)
 
         embed = discord.Embed(
             colour=0x58B19F,
             timestamp=ctx.message.created_at
         ).set_author(name="Timed Mute List", icon_url=ctx.guild.icon_url)
-        embed.set_footer(text=f"Page {page} / {total_page}")
+        embed.set_footer(text=f"Page {page} / {total}")
 
         for i in range(start, end):
             embed.add_field(name=f"User ID: {data[i].member}",

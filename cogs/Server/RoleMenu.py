@@ -417,6 +417,8 @@ class RoleMenu(commands.Cog):
     @role_menu.command(aliases=['c'])
     async def create(self, ctx: commands.Context, *, name: str):
         """Attempt to create a new role menu."""
+        if len(name) > 51:
+            return await ctx.send("name of the role menu is too long ,try keep it under or equal to 50 characters")
         try:
             self.label[ctx.guild.id][name]
         except KeyError:

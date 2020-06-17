@@ -148,10 +148,10 @@ class Logging(commands.Cog):
                 colour=0xf39c12
             )
             embed.add_field(name="list", value="List channels that is set as a log channel")
-            embed.add_field(name="+ [Optional: channel mention]",
+            embed.add_field(name="+ (channel mention)",
                             value="Sets the current channel (if no channel is given) or the mentioned channel as a"
                                   "log channel")
-            embed.add_field(name="s [optional: channel mention]",
+            embed.add_field(name="s (channel mention)",
                             value="Opens up the setting menu for the mentioned or current channel.")
             embed.set_footer(icon_url=self.bot.user.avatar_url_as(size=64),
                              text="Now do the lc command followed by one of the above")
@@ -258,7 +258,7 @@ class Logging(commands.Cog):
                f"👢|=> {y if data.data['kick'] else n} |=>User kicked from the server\n" \
                f"🔨|=> {y if data.data['ban'] else n} |=>User banned from the server\n" \
                f"👼|=> {y if data.data['unban'] else n} |=>User un-banned from the server\n" \
-               f"⚠|=> {y if data.data['trigger'] else n} |=>Word triggers within the server\n" \
+               f"⚠|=> {y if data.data['trigger'] else n} |=>Scanners within the server\n" \
                f"🚶|=> {y if data.data['raid'] else n} |=>Possible raid warning alert\n" \
                f"🔃|=> {y if data.data['member_update'] else n} |=>Display server member updates [name, nickname]\n" \
                f"🏗|=> {y if data.data['server_update'] else n} |=>Display server changes\n" \

@@ -216,38 +216,19 @@ class JoinRole(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
     async def join_role(self, ctx: commands.Context):
-        """Group of join_role commands, call it without sub-command to bring up list of join_role sub-commands."""
+        """Group of join_role commands, call it without sub-command to bring up list join roles for the server"""
         if not ctx.invoked_subcommand:
-            embed = discord.Embed(
-                title="Please specify the operation",
-                colour=0x12CBC4
-            )
-            embed.add_field(name="+ <Role mention or ID>...", inline=False,
-                            value="Adds in one or multiple roles into the system.")
-            embed.add_field(name="- <Role mention or ID>...", inline=False,
-                            value="Remove one or multiple roles from the system.")
-            embed.add_field(name="t", value="toggle auto role menu on or off", inline=False)
-            embed.add_field(name="list", value="Shows the number of roles in the join role system.", inline=False)
-            embed.add_field(name="purge", value="Turns join role system off and wipes the existing setting.",
-                            inline=False)
-            embed.set_footer(text="Now do the command again but with one of the above after the command",
-                             icon_url=self.bot.user.avatar_url_as(size=64))
-            await ctx.send(embed=embed)
-
-    @join_role.command(aliases=['l'])
-    async def list(self, ctx: commands.Context):
-        """List the roles within the Join Role system"""
-        data = self.search(ctx.guild.id)
-        if not isinstance(data, AutoRole):
-            await ctx.send("Join role system not set")
-        else:
-            temp = data.to_str()
-            status = "Join role list " + ("[On]" if data.power else "[Off]")
-            await ctx.send(embed=discord.Embed(
-                title=status,
-                colour=0x2ecc71 if data.power else 0xe74c3c,
-                description=temp
-            ))
+            data = self.search(ctx.guild.id)
+            if not isinstance(data, AutoRole):
+                await ctx.send("Join role system not set")
+            else:
+                temp = data.to_str()
+                status = "Join role list " + ("[On]" if data.power else "[Off]")
+                await ctx.send(embed=discord.Embed(
+                    title=status,
+                    colour=0x2ecc71 if data.power else 0xe74c3c,
+                    description=temp
+                ))
 
     @join_role.command()
     async def purge(self, ctx: commands.Context):
@@ -270,7 +251,7 @@ class JoinRole(commands.Cog):
         else:
             data.power = not data.power
             status = "On" if data.power else "Off"
-            data.update(self.db)
+            self.db.update_one({"_id": ctx.guild.id}, {"$set": {"switch": data.power}})
             await ctx.send(f"Join role system is now {status}")
 
     @join_role.command(aliases=['+'])

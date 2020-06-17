@@ -202,7 +202,7 @@ async def on_command_error(ctx: commands.Context, error: Exception):
     # Send appropriate error message on command error
     # Code Reference: From Commando950#0251 (119533809338155010) > https://gitlab.com/Commando950
     safe = [commands.CommandNotFound, commands.MissingPermissions, commands.BadArgument, commands.MissingPermissions,
-            commands.CheckFailure]
+            commands.CheckFailure, commands.errors.MissingRequiredArgument]
     if isinstance(error, tuple(safe)):
         return
     raise error

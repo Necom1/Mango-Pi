@@ -577,7 +577,9 @@ class AntiRaid(commands.Cog):
             embed.add_field(inline=False, name=f"{pre}ar clear (True or False)",
                             value="Turn off the anti raid alarm if it's on, and pass in whether or not to free all "
                                   "marked raiders. Default is no.")
-            embed.add_field(inline=False, name=f"{pre}ar raid", value="Turn on the anti raid alarm if it's off.")
+            embed.add_field(inline=False, name=f"{pre}ar raid (True or False)",
+                            value="Turn on the anti raid mode and put recent members into the raid cell indefinitely. "
+                                  "Additional parameter for if the raid mode is indefinite, default is yes.")
             embed.add_field(inline=False, name=f"{pre}ar kick (True or False)",
                             value="Kick all members inside the anti raid cell and pass in whether or not "
                                   "to switch off the anti raid alarm. Default is no.")

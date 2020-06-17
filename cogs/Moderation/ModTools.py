@@ -49,8 +49,8 @@ class ModTools(commands.Cog):
     @commands.command(aliases=["prune"])
     @commands.guild_only()
     @commands.has_permissions(manage_messages=True)
-    async def clear(self, ctx: commands.Context, amount: int, target: typing.Union[discord.Member, str] = None,
-                    word: str = None):
+    async def clear(self, ctx: commands.Context, amount: int,
+                    target: typing.Union[discord.Member, discord.User, int, str] = None, *, word: str = None):
         """Clear command to clear target amount of messages in the current channel.
         Target can either be user mention or message type (user mention, attachment, video, image)
         or message 'contain' followed by the target word. """
@@ -59,11 +59,11 @@ class ModTools(commands.Cog):
         if amount > 500:
             return await ctx.send("Please try to keep amount of messages to delete under 500, action cancelled.")
         special = " "
-        if target is None:
+        if not target:
             check = None
-        elif isinstance(target, discord.Member):
+        elif isinstance(target, (discord.Member, discord.User, int)):
             def check(m):
-                return m.author == target
+                return m.author.id == target if isinstance(target, int) else target.id
             special = f" **from {target}** "
         else:
             target = target.lower()
@@ -106,7 +106,7 @@ class ModTools(commands.Cog):
                 def check(m):
                     if m.attachments:
                         for i in m.attachments:
-                            if i.url.endswith(('.mp4', '.mov', '.avi', '.mkv', 'webm')):
+                            if i.url.endswith(('.mp4', '.mov', '.avi', '.mkv', '.webm')):
                                 return True
                     elif m.embeds:
                         for i in m.embeds:
@@ -116,7 +116,7 @@ class ModTools(commands.Cog):
             else:
                 print(f"Error around Line 91 -> {ctx.message.content}")
                 check = None
-                # should never reach this point but ait
+                # should never reach this point
             # Possible more future prune checks
 
         await ctx.message.delete()

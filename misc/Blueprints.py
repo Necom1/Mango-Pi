@@ -2,6 +2,7 @@ import re
 import asyncio
 import datetime
 from abc import abstractmethod
+from discord.ext import commands
 
 
 class DelayedTask:
@@ -133,3 +134,45 @@ def time_converter(time: str, start: datetime.datetime):
     else:
         ret = start + datetime.timedelta(seconds=time[4], minutes=time[3], hours=time[2], days=time[1], weeks=time[0])
     return ret
+
+
+def range_calculator(limit: int, size: int, current: int):
+    """
+    Function that returns starting point, end point, and total pages based on input
+
+    Parameters
+    ----------
+    limit: int
+        the number of max items display on a page
+    size: int
+        size of the total items
+    current: int
+        the current "page"
+
+    Returns
+    -------
+    int, int, int
+        data in the order of starting point, ending point, max number of pages
+    """
+    total_page = (size // limit) + 1
+    start = 0 if current == 1 else (limit * (current - 1))
+    end = size if start + limit >= size else start + limit
+
+    return start, end, total_page
+
+
+def is_admin(ctx: commands.Context):
+    """
+    Function that returns the Admin class check result for commands.Check
+
+    Parameters
+    ----------
+    ctx : commands.Context
+        pass in context to check
+
+    Returns
+    -------
+    bool
+        Whether or not the author is an admin
+    """
+    return ctx.bot.admins.check(ctx)

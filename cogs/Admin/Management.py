@@ -2,23 +2,7 @@ import typing
 import discord
 import traceback
 from discord.ext import commands
-
-
-def is_admin(ctx: commands.Context):
-    """
-    Function that returns the Admin class check result for commands.Check
-
-    Parameters
-    ----------
-    ctx : commands.Context
-        pass in context to check
-
-    Returns
-    -------
-    bool
-        Whether or not the author is an admin
-    """
-    return ctx.bot.admins.check(ctx)
+from misc.Blueprints import is_admin
 
 
 class Management(commands.Cog):

@@ -73,6 +73,8 @@ class Prefix(commands.Cog):
     async def prefix(self, ctx: commands.Context):
         """Command that will display the prefix setting for the current server with no additional parameter."""
         if not ctx.invoked_subcommand:
+            if self.bot.ignore_check(ctx):
+                return
             # if no sub-command specified, reply with the current server prefix setting
             try:
                 data = self.prefix[ctx.guild.id]
