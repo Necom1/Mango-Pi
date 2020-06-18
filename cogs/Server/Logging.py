@@ -474,6 +474,11 @@ class Logging(commands.Cog):
             new member who joined the server
         """
         try:
+            await self.bot.get_cog("Scanner").scan_name(member.guild, member, True)
+        except ValueError:
+            pass
+
+        try:
             data = self.memory[member.guild.id]
         except KeyError:
             return
@@ -663,6 +668,105 @@ class Logging(commands.Cog):
                 else:
                     if embed:
                         await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_member_update(self, before: discord.Member, after: discord.Member):
+        """
+        Async method / listener to be called when bot detects any member update. This method will attempt to relay
+        the new nickname compared to the old one
+
+        Parameters
+        ----------
+        before: discord.Member
+            member reference before the update
+        after: discord.Member
+            member reference after
+        """
+        if before.nick == after.nick:
+            return
+        try:
+            result = await self.bot.get_cog("Scanner").scan_name(after.guild, after, special=after.nick is None)
+        except ValueError:
+            result = False
+
+        if not result:
+            try:
+                data = self.memory[after.guild.id]
+            except KeyError:
+                return
+
+            embed = discord.Embed(
+                timestamp=datetime.datetime.utcnow(),
+                colour=0x9980FA,
+                description=after.mention
+            )
+            embed.set_author(name="✍ Nickname change!", icon_url=after.avatar_url)
+            if before.nick:
+                embed.add_field(name="Before", value=before.nick, inline=False)
+            if after.nick:
+                embed.add_field(name="Now", value=after.nick, inline=False)
+
+            for i in data:
+                if i.data['member_update']:
+                    channel = self.bot.get_channel(i.channel)
+                    if not channel:
+                        self.db.delete_one({"_id": i.channel})
+                    else:
+                        if embed:
+                            await channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_user_update(self, before: discord.User, after: discord.User):
+        """
+        Async method / listener to be called when bot detects any user update. This method will attempt to relay
+        the new username compared to the old one for server the user is in and has setup logging channels
+
+        Parameters
+        ----------
+        before: discord.User
+            user before the update
+        after: discord.User
+            user after the update
+        """
+        if (before.name == after.name) and (before.discriminator == after.discriminator):
+            return
+
+        is_in = []
+        for i in self.bot.guilds:
+            if i.get_member(after.id):
+                is_in.append(i)
+
+        for i in is_in:
+            try:
+                if before.name == after.name:
+                    raise ValueError
+                result = await self.bot.get_cog("Scanner").scan_name(i, after)
+            except ValueError:
+                result = False
+
+            if not result:
+                try:
+                    data = self.memory[i.id]
+                except KeyError:
+                    return
+
+                embed = discord.Embed(
+                    colour=0x45aaf2,
+                    timestamp=datetime.datetime.utcnow(),
+                    description=after.mention
+                )
+                embed.set_author(name="✍ Username change!", icon_url=after.avatar_url)
+                embed.add_field(name="Before", value=before.display_name, inline=False)
+                embed.add_field(name="Now", value=after.display_name, inline=False)
+
+                for k in data:
+                    if k.data['member_update']:
+                        channel = self.bot.get_channel(k.channel)
+                        if not channel:
+                            self.db.delete_one({"_id": k.channel})
+                        else:
+                            if embed:
+                                await channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel):

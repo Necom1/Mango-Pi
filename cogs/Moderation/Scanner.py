@@ -251,6 +251,147 @@ class Scanner(commands.Cog):
         except KeyError:
             return
 
+    async def scan_name(self, guild: discord.Guild, after: typing.Union[discord.Member, discord.User],
+                        new_member: bool = False, special: bool = False):
+        """
+        Async method that scans either the username or the nickname base on the passed in type of after parameter, and
+        send warning message if anything bad detected.
+
+        Parameters
+        ----------
+        guild: discord.Guild
+            the guild reference for the passed in user or member
+        after: typing.Union[discord.Member, discord.User]
+            nickname or username to scan
+        new_member: bool
+            whether or not "after" is a new member
+        special: bool
+            on the assumption that "after" is a member reference, however, scan username instead of nickname
+
+        Returns
+        -------
+        bool
+            Whether or not any "normal" notification should be sent regarding the user/member update
+        """
+        scan_nick = isinstance(after, discord.Member) and not special
+        if scan_nick:
+            try:
+                async for entry in guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update):
+                    if entry.user.id == self.bot.user.id:
+                        return True
+                    if entry.user.id != entry.target.id and after.id == entry.target.id:
+                        return False
+            except discord.errors.Forbidden:
+                return False
+        else:
+            after = guild.get_member(after.id) if isinstance(after, discord.User) else after
+            if not after:
+                return False
+
+        try:
+            data = self.data[guild.id]
+        except KeyError:
+            return False
+
+        result = {}
+        rename = False
+        warn = []
+        now = datetime.datetime.utcnow()
+
+        for k, v in data.items():
+            temp = v.scan(after.nick if scan_nick and not new_member else after.name, after)
+            if temp:
+                result[k] = temp
+                rename = v.delete or rename
+                if v.warn:
+                    for i in temp:
+                        if i not in warn:
+                            warn.append(i)
+
+        if len(result) < 1:
+            return False
+
+        if rename:
+            try:
+                new = self.names[guild.id]
+            except KeyError:
+                new = self.default
+            if new_member:
+                reason = "Bad username on join"
+            elif scan_nick:
+                reason = "Illegal Nickname"
+            else:
+                reason = "Illegal Username"
+            try:
+                await after.edit(nick=new, reason=reason)
+            except discord.errors.Forbidden:
+                return False
+
+        if len(warn) > 0:
+            reason = ", ".join(warn)
+
+            if new_member:
+                reason = f"Username contained banned words: `{reason}` on Join"
+            elif scan_nick:
+                embed = discord.Embed(
+                    timestamp=now,
+                    description=f"Having **{reason}** in your nickname isn't allowed here.",
+                    colour=0xf1c40f
+                ).set_footer(icon_url=str(after.avatar_url_as(size=64))).set_author(icon_url=guild.icon_url,
+                                                                                    name=f"{guild.name}")
+                try:
+                    await after.send("⚠ Auto Warn ⚠", embed=embed)
+                except discord.HTTPException:
+                    pass
+                reason = f"Nickname contained banned words: {reason}"
+            else:
+                reason = f"Username contained banned words: {reason}"
+            try:
+                self.bot.get_cog("Warn").add_warn(now, guild.id, after.id,
+                                                  self.bot.user.id, 1, reason)
+            except ValueError:
+                pass
+
+        string = ""
+        for k, v in result.items():
+            temp = ', '.join(v)
+            string += f"**__{k}__**:\n{temp}\n\n"
+        try:
+            channels = self.bot.get_cog("Logging").memory[guild.id]
+        except (KeyError, ValueError):
+            channels = []
+        if new_member:
+            embed = discord.Embed(
+                colour=0xF79F1F,
+                timestamp=datetime.datetime.utcnow(),
+                description=after.mention
+            )
+            embed.set_author(icon_url=after.avatar_url, name="🚨 Bad Name on Join ⚠")
+        elif scan_nick:
+            embed = discord.Embed(
+                colour=0xF79F1F,
+                timestamp=now,
+                description=after.mention
+            )
+            embed.set_author(icon_url=after.avatar_url, name="🚨 Bad Nickname!")
+        else:
+            if special:
+                return True
+            embed = discord.Embed(
+                colour=0xF79F1F,
+                timestamp=now,
+                description=after.mention
+            )
+            embed.set_author(icon_url=after.avatar_url, name="🚨 Bad Username!")
+        embed.add_field(inline=False, name="Problematic Words", value=string)
+        for i in channels:
+            if i.data['trigger']:
+                channel = self.bot.get_channel(i.channel)
+                if channel:
+                    await channel.send(embed=embed)
+
+        return True
+
     @commands.group(aliases=["s"])
     @commands.has_permissions(manage_channels=True)
     async def scanner(self, ctx: commands.Context):
@@ -833,6 +974,15 @@ class Scanner(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
+        """
+        Async method/event listener that scans the received new message from TextChannel through scanners and send
+        notification to the appropriate channel if applicable
+
+        Parameters
+        ----------
+        message: discord.Message
+            the newly received message
+        """
         if message.author.bot or message.channel.type != discord.ChannelType.text or message.content == "":
             return
 
@@ -921,6 +1071,17 @@ class Scanner(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
+        """
+        Async method/event listener to be called when the bot detects a edit message update and send the edited
+        through scanners
+
+        Parameters
+        ----------
+        before: discord.Message
+            the message before edit
+        after: discord.Message
+            message after edit
+        """
         if after.author.bot or after.channel.type != discord.ChannelType.text or after.content == "":
             return
 
