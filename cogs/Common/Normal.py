@@ -362,7 +362,7 @@ class Normal(commands.Cog):
         if len(details) > 0:
             embed.add_field(name="Bot Staffs", value="\n".join(f"> {i.mention}" for i in details), inline=False)
         embed.add_field(name="Creator / Developer",
-                        value=f"{creator.mention} / [Necomi#1555](https://github.com/Necom1)", inline=False)
+                        value=f"{creator.mention} / [Necom1](https://github.com/Necom1)", inline=False)
         embed.add_field(name="I am born on", value=self.bot.user.created_at.strftime("%#d %B %Y, %I:%M %p UTC"))
         # embed.add_field(name="Support Server", value="[Flower Field](http://discord.gg/sWYPsU7)")
 

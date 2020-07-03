@@ -6,6 +6,7 @@ import platform
 import traceback
 from pymongo import MongoClient
 from discord.ext import commands
+from misc.HelpMenu import CustomHelpCommand
 
 
 class Admins:
@@ -121,7 +122,7 @@ with open('./bot-keys.json') as f:
 
 token = keys['token']
 default_prefix = keys['prefix']
-bot = commands.Bot(command_prefix=commands.when_mentioned_or(default_prefix))
+bot = commands.Bot(command_prefix=commands.when_mentioned_or(default_prefix), help_command=CustomHelpCommand())
 
 bot.mongo = MongoClient(keys['DB-address'])[keys['DB-cluster']]
 bot.loaded_cogs = {}

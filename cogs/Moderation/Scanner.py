@@ -140,6 +140,7 @@ class Detector:
         ret = []
 
         # code from (Jack)Tewi#8723 and Commando950#0251
+        target = target.replace("||", "")
         temp = str(unicodedata.normalize('NFKD', target).encode('ascii', 'ignore')).lower()
         # https://stackoverflow.com/questions/4128332/re-findall-additional-criteria
         # https://stackoverflow.com/questions/14198497/remove-char-at-specific-index-python
