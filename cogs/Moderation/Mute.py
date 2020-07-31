@@ -67,11 +67,19 @@ async def remove_mute(bot: commands.Bot, guild: int, target: int, reason: str = 
             mass_delete()
         else:
             member = server.get_member(target)
-            if member:
-                try:
-                    await member.remove_roles(role, reason=reason)
-                except discord.HTTPException:
-                    pass
+            try:
+                if member:
+                    if role in member.roles:
+                        try:
+                            await member.remove_roles(role, reason=reason)
+                        except discord.HTTPException:
+                            raise ValueError("remove request")
+                    else:
+                        raise ValueError("remove request")
+                else:
+                    raise ValueError("remove request")
+            except ValueError:
+                bot.mongo["mute_time"].delete_one({"guild_id": guild, "user_id": target})
 
 
 class MuteTimer(DelayedTask):

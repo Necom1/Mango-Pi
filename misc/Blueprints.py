@@ -1,4 +1,5 @@
 import re
+import json
 import asyncio
 import datetime
 from abc import abstractmethod
@@ -17,9 +18,10 @@ class DelayedTask:
         contains how many second until end time from constructor
     loop : asyncio.get_event_loop()
         asyncio loop
-    process : classmethod
+    process : method
         current running process
     """
+
     def __init__(self, end: datetime.datetime):
         """
         Constructor for the DelayedTask class.
@@ -55,9 +57,14 @@ class DelayedTask:
             raise asyncio.InvalidStateError("Process is already running")
         self.process = self.loop.create_task(self.task())
 
-    async def terminate(self):
+    async def terminate(self, ignore: bool = False):
         """
         Method of DelayedTask class that cancels the current running task if any.
+
+        Parameters
+        ----------
+        ignore: bool
+            whether or not ignore exception, default is false
 
         Raises
         ------
@@ -65,7 +72,10 @@ class DelayedTask:
             there is not current on going task
         """
         if not self.process:
-            raise asyncio.InvalidStateError("No process is running")
+            if not ignore:
+                raise asyncio.InvalidStateError("No process is running")
+            else:
+                return
         self.process.cancel()
         await self.on_exit()
         self.process = None
@@ -83,6 +93,117 @@ class DelayedTask:
         Empty exit method for terminate method. Meant to be implemented and be called from terminate method.
         """
         pass
+
+    def __del__(self):
+        asyncio.get_event_loop().create_task(self.terminate(True))
+
+
+class Admins:
+    """
+    Class stores and manage bot admin info
+
+    Attributes
+    ----------
+    inUse : bool
+        Whether or not bot-commanders.json file is currently being read/write to
+    data : dict
+        Dictionary that stores the bot master's ID and it's administrators
+    file: str
+        file location for the json setting file
+    """
+
+    def __init__(self, bot: commands.Bot, file_name: str = "bot-commanders.json"):
+        """
+        Constructor for the Admins class
+
+        Parameters
+        ----------
+        bot: commands.Bot
+            pass in bot for checking owner
+        """
+        self.inUse = False
+        self.file = file_name
+        try:
+            with open(f'./{file_name}') as file:
+                self.data = json.load(file)
+                self.data['owner'] = bot.app_info.owner.id
+        except FileNotFoundError or json.decoder.JSONDecodeError:
+            self.data = {'owner': bot.app_info.owner.id, 'admins': []}
+            self.update()
+
+    def update(self):
+        """
+        Method that writes to bot-commanders.json with the current data information.
+
+        Raises
+        ------
+        RunTimeError
+            if the method is currently being called
+        """
+        if self.inUse:
+            raise RuntimeError('Currently in use')
+        self.inUse = True
+        with open(f'./{self.file}', 'w') as out:
+            json.dump(self.data, out)
+        self.inUse = False
+
+    def add(self, user: int):
+        """
+        Method that will attempt to add the specified ID to the administrator list.
+
+        Parameters
+        ----------
+        user : int
+            Discord ID of the user to add to the admin list
+
+        Returns
+        -------
+        str
+            Special condition message such as user already an admin or you are trying to add the owner.
+        """
+        if user in self.data['admins']:
+            return 'That user is already an admin'
+        if user == self.data['owner']:
+            return 'You are the owner...'
+        self.data['admins'].append(user)
+        self.update()
+
+    def remove(self, user: int):
+        """
+        Method that will attempt remove a specific ID from the administrator list.
+
+        Parameters
+        ----------
+        user : int
+            User ID of the admin to remove from bot's admin list
+
+        Returns
+        -------
+        str
+            Special condition message such as user not an admin or you are trying to remove the owner.
+        """
+        if user == self.data['owner']:
+            return "No can't do master"
+        if user not in self.data['admins']:
+            return 'That user is not an admin'
+        self.data['admins'].remove(user)
+        self.update()
+
+    def check(self, ctx: commands.Context):
+        """
+        Method that checks whether or not the author is part of the bot admin list.
+
+        Parameters
+        ----------
+        ctx : commands.Context
+            pass in context to scan for author
+
+        Returns
+        -------
+        bool
+            Whether or not the author is part of the bot administration
+        """
+        return (ctx.author.id == self.data['owner']) or (ctx.author.id in self.data['admins'])
 
 
 def time_converter(time: str, start: datetime.datetime):

@@ -360,11 +360,10 @@ class Normal(commands.Cog):
         embed.add_field(name="Bot Master", value=self.bot.app_info.owner.mention)
         details = self.bot.admins.data['admins']
         if len(details) > 0:
-            embed.add_field(name="Bot Staffs", value="\n".join(f"> {i.mention}" for i in details), inline=False)
+            embed.add_field(name="Bot Staffs", value="\n".join(f"> <@!{i}>" for i in details), inline=False)
         embed.add_field(name="Creator / Developer",
                         value=f"{creator.mention} / [Necom1](https://github.com/Necom1)", inline=False)
         embed.add_field(name="I am born on", value=self.bot.user.created_at.strftime("%#d %B %Y, %I:%M %p UTC"))
-        # embed.add_field(name="Support Server", value="[Flower Field](http://discord.gg/sWYPsU7)")
 
         embed.set_footer(text="v 0.9 | Beta", icon_url="https://i.imgur.com/RPrw70n.jpg")
 

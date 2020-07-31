@@ -333,7 +333,7 @@ class CustomHelpCommand(HelpCommand):
                         "/ - separator for different options\n\n"
                         "Doing the command call after help will tell you more information about that command\n"
                         f"**Example**: ```{self.context.prefix}help ping```\n\n"
-                        "|> Multi-action will require __parentheses__ around the phrase to add or remove the"
+                        "|> Multi-action will require __parentheses__ around the phrase to add or remove the "
                         "desire words\n"
                         "Do note that some command will require permission to perform."
         ).set_footer(text="Information Menu, react with other reactions to exit.")

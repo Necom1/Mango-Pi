@@ -706,7 +706,7 @@ class AntiRaid(commands.Cog):
     @anti_raid.command(aliases=['s'])
     async def setting(self, ctx: commands.Context):
         """Brings up anti-raid setting menu."""
-        emotes = ['💡', '👪', '⏱', '📛', '😴', '🔁', '⏸']
+        emotes = ['💡', '👪', '⏱', '📛', '😴', '⏸']
 
         def check(reaction1, user1):
             return reaction1.emoji in emotes and user1.id == ctx.author.id
@@ -722,7 +722,7 @@ class AntiRaid(commands.Cog):
                             f"⏱ - Timer [{data.interval} seconds]\n"
                             f"😴 - Raid Timeout: {data.timeout} seconds \n"
                             f"📛 - Raider Role: " + (f"{de_role.mention}" if de_role else "**Error!!**") + "\n"
-                            f"🔁 - Reload Anti-Raid Module\n⏸ - Setting Menu Pause"
+                            f"⏸ - Setting Menu Pause"
             ).set_footer(text="React to Modify", icon_url=self.bot.user.avatar_url_as(size=128))
             msg = await ctx.send(embed=embed)
             for i in emotes:
@@ -744,9 +744,6 @@ class AntiRaid(commands.Cog):
             elif reaction.emoji == "💡":
                 result = data.toggle()
                 await msg.edit(embed=None, content="Anti-Raid now enabled" if result else "Anti-Raid now disabled")
-            elif reaction.emoji == '🔁':
-                self.update(ctx.guild.id)
-                return await msg.edit(embed=None, content="Anti-Raid reloaded 🔁")
             elif reaction.emoji == '📛':
                 await msg.edit(embed=None, content="Enter the role ID of the new raider role.")
                 try:
