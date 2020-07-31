@@ -1,0 +1,4 @@
+pytz
+pymongo
+requests
+discord.py[voice]==1.3.4

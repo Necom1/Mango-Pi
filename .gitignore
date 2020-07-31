@@ -125,7 +125,6 @@ dmypy.json
 .idea/pyBot.iml
 
 # custom
-*.txt
 cogs/Test.py
 Old Files
 .idea
