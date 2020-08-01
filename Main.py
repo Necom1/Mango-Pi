@@ -18,7 +18,7 @@ from misc.HelpMenu import CustomHelpCommand
 # https://discordpy.readthedocs.io/
 
 
-with open('./bot-keys.json') as f:
+with open('./Bot Settings/bot-keys.json') as f:
     keys = json.load(f)
 
 token = keys['token']

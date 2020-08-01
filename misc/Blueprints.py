@@ -112,7 +112,7 @@ class Admins:
         file location for the json setting file
     """
 
-    def __init__(self, bot: commands.Bot, file_name: str = "bot-commanders.json"):
+    def __init__(self, bot: commands.Bot, file_name: str = "Bot Settings/bot-commanders.json"):
         """
         Constructor for the Admins class
 
