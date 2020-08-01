@@ -436,4 +436,4 @@ class CustomHelpCommand(HelpCommand):
         try:
             return self.context.bot.ignore_check(self.context)
         except AttributeError:
-            return True
+            return False
