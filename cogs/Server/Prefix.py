@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from Components.MangoPi import MangoPi
 
 
 class Prefix(commands.Cog):
@@ -8,34 +9,34 @@ class Prefix(commands.Cog):
 
     Attributes
     ----------
-    bot : commands.Bot
-        commands.Bot reference
+    bot : MangoPi
+        MangoPi bot reference
     prefix : dict
         dictionary that stores all the prefixes
     db : MongoClient
         client for MongoDB "custom_prefix" collection
     """
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: MangoPi):
         """
         Constructor for Prefix class.
 
         Parameters
         ----------
-        bot : commands.Bot
+        bot : MangoPi
             pass in bot reference for the Cog
         """
         self.bot = bot
         self.prefix = {}
         self.db = bot.mongo["prefix"]
 
-    # method to pass into bot's command_prefix
-    def get_prefix(self, client: commands.Bot, message: discord.Message):
+    # method to pass into bot command_prefix
+    def get_prefix(self, client: MangoPi, message: discord.Message):
         """
         Method that design to be pass into commands.Bot's command_prefix
 
         Parameters
         ----------
-        client : commands.Bot
+        client : MangoPi
             bot reference for commands.when_mentioned_or
         message : discord.Message
             The Received discord message
@@ -45,9 +46,9 @@ class Prefix(commands.Cog):
         commands.when_mentioned_or
             Method to pass into bot.command_prefix
         """
-        default = client.defaultPre
+        default = client.default_prefix
         if not message.guild:
-            # if message from a server
+            # if message not from a server
             return commands.when_mentioned_or(default)(client, message)
 
         try:
@@ -88,8 +89,8 @@ class Prefix(commands.Cog):
 
     @prefix.command()
     async def default(self, ctx: commands.Context):
-        """Command that display bot's default prefix."""
-        await ctx.send(f"My default prefix is: **{self.bot.defaultPre}**")
+        """Command that display bot default prefix."""
+        await ctx.send(f"My default prefix is: **{self.bot.default_prefix}**")
 
     @prefix.command()
     @commands.has_permissions(manage_channels=True)
@@ -101,8 +102,8 @@ class Prefix(commands.Cog):
         except KeyError:
             data = None
 
-        if pre == self.bot.defaultPre:
-            # resetting prefix to bot's default
+        if pre == self.bot.default_prefix:
+            # resetting prefix to bot default
             if not data:
                 # if no server prefix setting
                 await ctx.send("🤷 Nothing has changed.")
@@ -110,7 +111,7 @@ class Prefix(commands.Cog):
                 # resetting current prefix back to default
                 self.db.delete_one({"_id": ctx.guild.id})
                 self.prefix.pop(ctx.guild.id)
-                await ctx.send(f"Server prefix have been reset to: **{self.bot.defaultPre}**.")
+                await ctx.send(f"Server prefix have been reset to: **{self.bot.default_prefix}**.")
             return
 
         if not data:
@@ -125,14 +126,14 @@ class Prefix(commands.Cog):
             await ctx.send(f"Server prefix have been updated to: **{pre}**.")
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs. This will update Prefix's data from mongoDB and append get_prefix to
-    bot's command_prefix.
+    bot command_prefix.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to add Cog and modify command_prefix
     """
     temp = Prefix(bot)
@@ -142,15 +143,15 @@ def setup(bot: commands.Bot):
     print("Load Cog:\tPrefix")
 
 
-def teardown(bot: commands.Bot):
+def teardown(bot: MangoPi):
     """
-    Function to be called upon unloading this Cog. This will restore bot's command_prefix to bot's default.
+    Function to be called upon unloading this Cog. This will restore bot command_prefix to bot default.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to remove Cog and restore command_prefix
     """
-    bot.command_prefix = commands.when_mentioned_or(bot.defaultPre)
+    bot.command_prefix = commands.when_mentioned_or(bot.default_prefix)
     bot.remove_cog("Prefix")
     print("Unload Cog:\tPrefix")

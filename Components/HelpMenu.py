@@ -48,7 +48,9 @@ def process_command_list(original: discord.Embed, filtered: list):
             i += 1
 
         name = command.name
-        detail = str(command.short_doc)
+        detail = command.description if command.description else command.help
+        if detail == "" or not detail:
+            detail = "No Info Provided"
         ret[i].add_field(name=name, value=detail.replace("\n", " "), inline=False)
         count += 1
 
@@ -67,12 +69,12 @@ class EmbedPaginator:
         number representing a HTML hexadecimal color for the embed
     """
 
-    def __init__(self):
+    def __init__(self, color=0x18dcff):
         """
         EmbedPaginator class constructor
         """
         self.buffer = []
-        self.color = 0x18dcff
+        self.color = color
 
     def clear(self):
         """
@@ -151,7 +153,8 @@ class CustomHelpCommand(HelpCommand):
         self.sort_commands = options.pop('sort_commands', True)
         self.dm_help = options.pop('dm_help', False)
         self.no_category = options.pop('no_category', 'No Category')
-        self.paginator = EmbedPaginator()
+        self.paginator = EmbedPaginator(options.pop('primary_color', 0x18dcff))
+        self.help_color = options.pop('secondary_color', 0x16a085)
         self.checked = options.pop('ignore_check', self.ignore_check)
         super().__init__(**options)
 
@@ -261,7 +264,10 @@ class CustomHelpCommand(HelpCommand):
             return
 
         signature = self.get_command_signature(command)
-        description = command.help.replace("\n", " ")
+        description = command.help.replace("\n", " ") if not command.description else \
+            command.description.replace("\n", " ")
+        if description == "" or not description:
+            description = "No Info Provided"
         embed = discord.Embed(colour=self.paginator.color, description=description, title=signature)
         await self.get_destination().send(embed=embed)
 
@@ -278,7 +284,7 @@ class CustomHelpCommand(HelpCommand):
             return
 
         signature = self.get_command_signature(group)
-        description = process_description(group.help)
+        description = process_description(group.help).replace("\n", " ")
         description = f"{description}\n\n__Sub-commands__:" if len(description) > 0 else "__Sub-commands__:"
         embed = discord.Embed(
             colour=self.paginator.color, title=signature, description=description
@@ -328,7 +334,7 @@ class CustomHelpCommand(HelpCommand):
         reacts = ['⏮', '⏪', '⏹', '⏩', '⏭', '📋', '🔢']
         info = discord.Embed(
             title="Help Command Guide",
-            colour=0x16a085,
+            colour=self.help_color,
             description="<...> - mandatory input\n(...) - optional input\n"
                         "/ - separator for different options\n\n"
                         "Doing the command call after help will tell you more information about that command\n"
@@ -377,7 +383,7 @@ class CustomHelpCommand(HelpCommand):
                 else:
                     change = False
             elif reaction.emoji == '⏹':
-                await message.edit(content="Help menu paused")
+                await message.edit(content="Help menu frozen")
                 if not_private:
                     await message.clear_reactions()
                 break
@@ -422,7 +428,10 @@ class CustomHelpCommand(HelpCommand):
             if change:
                 await message.edit(embed=info if in_help else data[current])
             if not_private:
-                await message.remove_reaction(reaction.emoji, user)
+                try:
+                    await message.remove_reaction(reaction.emoji, user)
+                except discord.Forbidden:
+                    pass
 
     def ignore_check(self):
         """

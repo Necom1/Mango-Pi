@@ -5,7 +5,7 @@ import asyncio
 import discord
 import datetime
 from discord.ext import commands, tasks
-from cogs.Admin.Management import is_admin
+from Components.MangoPi import MangoPi, is_admin
 
 
 def setup(bot: commands.Bot):

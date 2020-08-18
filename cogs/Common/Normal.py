@@ -1,32 +1,10 @@
-import discord
-from discord.ext import commands
-
 import time
 import typing
-import datetime
 import asyncio
-
-
-def verification(ver: discord.VerificationLevel):
-    """
-    Function that converts Verification Level type to string.
-
-    Parameters
-    ----------
-    ver : discord.VerificationLevel
-        discord server verification level to convert
-
-    Returns
-    -------
-    str
-        the converted verification level
-    """
-    ret = {discord.VerificationLevel.none: "Free crossing 🚶",
-           discord.VerificationLevel.low: "visa? 📧",
-           discord.VerificationLevel.medium: "5 minutes and older only ⌛",
-           discord.VerificationLevel.high:  "Wait 10 minute, have some tea ⏲💬",
-           discord.VerificationLevel.extreme: "Can I have your number? 📱"}
-    return ret[ver]
+import discord
+import datetime
+from discord.ext import commands
+from Components.MangoPi import MangoPi
 
 
 class Normal(commands.Cog):
@@ -38,16 +16,23 @@ class Normal(commands.Cog):
     bot : commands.Bot
         commands.Bot reference
     """
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: MangoPi):
         """
         Constructor for Normal class.
 
         Parameters
         ----------
-        bot : commands.Bot
+        bot : MangoPi
             pass in bot reference for the Cog
         """
         self.bot = bot
+        self.verification_level = {
+            discord.VerificationLevel.none: "Free crossing 🚶",
+            discord.VerificationLevel.low: "visa? 📧",
+            discord.VerificationLevel.medium: "5 minutes and older only ⌛",
+            discord.VerificationLevel.high: "Wait 10 minute, have some tea ⏲💬",
+            discord.VerificationLevel.extreme: "Can I have your number? 📱"
+        }
 
     # get bot connection command
     @commands.command(aliases=["connection"])
@@ -117,7 +102,7 @@ class Normal(commands.Cog):
         if self.bot.ignore_check(ctx):
             return
 
-        admin = self.bot.admins.check(ctx)
+        admin = self.bot.data.staff_check(ctx)
 
         if isinstance(member, int) and admin:
             member = await self.bot.fetch_user(member)
@@ -262,11 +247,11 @@ class Normal(commands.Cog):
         embed.add_field(name="Region", value=server.region)
         embed.add_field(name="Filter", value=server.explicit_content_filter)
         embed.add_field(name="Security Level",
-                        value=f"{verification(server.verification_level)}" + ("and need 2FA" if server.mfa_level == 1
-                                                                              else ""),
+                        value=f"{self.verification_level[server.verification_level]}" +
+                              ("and need 2FA" if server.mfa_level == 1 else ""),
                         inline=False)
         embed.add_field(name="Upload Limit", value=f"{server.filesize_limit / 1048576} MB")
-        embed.add_field(name="Bitrate Limit", value=f"{server.bitrate_limit / 1000} kbps")
+        embed.add_field(name="Bit Rate Limit", value=f"{server.bitrate_limit / 1000} kbps")
         embed.add_field(name="Emote Slots", value=f"{normal} / {server.emoji_limit}")
         embed.add_field(name="Animated Emote Slots", value=f"{animated} / {server.emoji_limit}")
         embed.add_field(name="Server Birthday",
@@ -358,7 +343,7 @@ class Normal(commands.Cog):
         embed.set_thumbnail(url=self.bot.user.avatar_url_as(size=256))
         creator = await self.bot.fetch_user(267909205225242624)
         embed.add_field(name="Bot Master", value=self.bot.app_info.owner.mention)
-        details = self.bot.admins.data['admins']
+        details = self.bot.data.staff
         if len(details) > 0:
             embed.add_field(name="Bot Staffs", value="\n".join(f"> <@!{i}>" for i in details), inline=False)
         embed.add_field(name="Creator / Developer",
@@ -370,26 +355,26 @@ class Normal(commands.Cog):
         await ctx.send(embed=embed)
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to add Cog
     """
     bot.add_cog(Normal(bot))
     print("Load Cog:\tNormal")
 
 
-def teardown(bot: commands.Bot):
+def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to remove Cog
     """
     bot.remove_cog("Normal")

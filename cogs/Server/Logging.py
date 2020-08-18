@@ -172,7 +172,7 @@ class Logging(commands.Cog):
             channel = ctx.guild.get_channel(i.channel)
             message += f"> {channel.mention}\n" if channel else f"> {i.channel} 🗑️\n"
         message += "========================="
-        new = self.bot.split_string_tool(message, 2000)
+        new = split_string(message, 2000)
         for i in new:
             await ctx.send(i)
 
@@ -457,7 +457,6 @@ class Logging(commands.Cog):
                     return
 
                 if embed:
-                    embed.set_author(name="Voice Channel Update")
                     embed.set_footer(icon_url=member.avatar_url_as(size=64), text=label)
                     embed.timestamp = now
                     await channel.send(embed=embed)
@@ -809,3 +808,23 @@ def teardown(bot: commands.Bot):
     """
     bot.remove_cog("Logging")
     print("Unload Cog:\tLogging")
+
+
+def split_string(line: str, n: int):
+    """
+    Function that will split the given string into specified length and append it to array.
+
+    Parameters
+    ----------
+    line : str
+        the string to split
+    n : int
+        max length for the string
+
+    Returns
+    -------
+    list
+        list of the split string
+    """
+    # code from: https://stackoverflow.com/questions/9475241/split-string-every-nth-character
+    return [line[i:i + n] for i in range(0, len(line), n)]

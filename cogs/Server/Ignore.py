@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from Components.MangoPi import MangoPi, offline
 
 
 class Ignore(commands.Cog):
@@ -15,13 +16,13 @@ class Ignore(commands.Cog):
     db : MongoClient
         client for MongoDB "ignore_channel" collection
     """
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: MangoPi):
         """
         Constructor for Ignore class.
 
         Parameters
         ----------
-        bot : commands.Bot
+        bot : MangoPi
             pass in bot reference for the Cog
         """
         self.bot = bot
@@ -146,13 +147,13 @@ class Ignore(commands.Cog):
         self.update(ctx.guild.id)
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MangoPi):
     """
-    Function necessary for loading Cogs. This will update Ignore's data from mongoDB.
+    Function necessary for loading Cogs. This will update Ignore data from mongoDB.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to add Cog
     """
     temp = Ignore(bot)
@@ -162,37 +163,15 @@ def setup(bot: commands.Bot):
     print("Load Cog:\tIgnore")
 
 
-def teardown(bot: commands.Bot):
+def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to remove Cog
     """
     bot.remove_cog("Ignores")
     bot.ignore_check = offline
     print("Unload Cog:\tIgnore")
-
-
-def offline(ctx: commands.Context, ignore_dm: bool = False):
-    """
-    A function that checks if DM is ignored. This is only used when Ignore Cog is offline.
-
-    Parameters
-    ----------
-    ctx : commands.Context
-        pass in context for analysis
-    ignore_dm : bool
-        whether or not the command is being ignored in direct messages
-
-    Returns
-    -------
-    bool
-        Whether or not that channel is ignored
-    """
-    if not ctx.guild:
-        return ignore_dm
-
-    return False

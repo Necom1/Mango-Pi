@@ -2,7 +2,7 @@ import typing
 import discord
 import traceback
 from discord.ext import commands
-from misc.Blueprints import is_admin
+from Components.MangoPi import MangoPi, is_admin
 
 
 class Management(commands.Cog):
@@ -16,13 +16,13 @@ class Management(commands.Cog):
     illegal : list
         list containing Cogs that can not be unload or reload by bot administrators
     """
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: MangoPi):
         """
         Constructor for Management class.
 
         Parameters
         ----------
-        bot : commands.Bot
+        bot : MangoPi
             pass in bot reference for the Cog
         """
         self.bot = bot
@@ -114,63 +114,68 @@ class Management(commands.Cog):
             await ctx.send(f"```py\n{traceback.format_exc()}\n```")
             raise ex
 
-    @commands.command(aliases=['+staff'])
+    @commands.group(aliases=["sm"])
     @commands.is_owner()
-    async def add_staff(self, ctx: commands.Context, target: typing.Union[discord.Member, discord.User, int]):
-        """Bot owner only command that add a user to bot's administrator list."""
+    async def staff_management(self, ctx: commands.Context):
+        """Command group for managing bot stuff only usable by bot owner"""
+        if not ctx.invoked_subcommand:
+            data = [f"<@!{i}>" for i in self.bot.data.staff]
+            embed = discord.Embed(colour=0x55efc4, description="\n".join(data), title="Bot Staff List")
+            await ctx.send(embed=embed)
+
+    @staff_management.command(aliases=['+'])
+    async def add(self, ctx: commands.Context, target: typing.Union[discord.Member, discord.User, int]):
+        """staff management command that add a user to bot's administrator list."""
         if isinstance(target, int):
             try:
                 target = await self.bot.fetch_user(target)
             except discord.NotFound:
                 return await ctx.send("Can not find that user.")
         try:
-            ret = self.bot.admins.add(target.id)
+            ret = self.bot.data.add_staff(target.id)
         except RuntimeError:
             return await ctx.send("Current busy, please try again later.")
         if ret:
             await ctx.send(ret)
         else:
-            await ctx.message.add_reaction(emoji='👍')
             await ctx.send(f"Added **{target}** to administrator list.")
 
-    @commands.command(aliases=['-staff'])
-    @commands.is_owner()
-    async def remove_staff(self, ctx: commands.Context, target: typing.Union[discord.Member, discord.User, int]):
-        """Bot owner only command that removes a user from bot's administrator list."""
+    @staff_management.command(aliases=['-'])
+    async def remove(self, ctx: commands.Context, target: typing.Union[discord.Member, discord.User, int]):
+        """staff management command that removes a user from bot's administrator list."""
         if not isinstance(target, int):
             target = target.id
         try:
-            ret = self.bot.admins.remove(target)
+            ret = self.bot.data.remove_staff(target)
         except RuntimeError:
             return await ctx.send("Current busy, please try again later.")
         if ret:
             await ctx.send(ret)
         else:
-            await ctx.message.add_reaction(emoji='👍')
             await ctx.send(f"Removed user with ID of **{target}** from administrator list.")
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
     Parameters
     ----------
-    bot : commands.Bot
-        pass in bot reference to add Cog
+    bot : MangoPi
+        pass in MangoPi bot reference to add Cog
     """
     bot.add_cog(Management(bot))
     print("Load Cog:\tManagement")
 
 
-def teardown(bot: commands.Bot):
+def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
     Parameters
     ----------
-    bot : commands.Bot
-        pass in bot reference to remove Cog
+    bot : MangoPi
+        pass in MangoPi bot reference to remove Cog
     """
     bot.remove_cog("Management")
     print("Unload Cog:\tManagement")
