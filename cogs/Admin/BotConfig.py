@@ -44,24 +44,29 @@ class BotConfig(commands.Cog):
     """
 
     def __init__(self, bot: MangoPi):
+        """
+        Constructor for BotCofig class
+
+        Parameters
+        ----------
+        bot: MangoPi
+            takes in MangoPi reference
+        """
         self.bot = bot
         self.follow_up = False
 
         if self.bot.is_ready():
-            asyncio.get_event_loop().create_task(self.change_default_activity())
+            asyncio.get_event_loop().create_task(self.bot.data.change_to_default_activity())
         else:
             self.follow_up = True
 
-    async def change_default_activity(self):
-        status = self.bot.data.default_status
-        activity = self.bot.data.default_activity
-
-        await self.bot.change_presence(status=status, activity=activity)
-
     @commands.Cog.listener()
     async def on_ready(self):
+        """
+        Async event listener executes when bot is ready, checks whether or not bot need presence change follow up
+        """
         if self.follow_up:
-            await self.change_default_activity()
+            await self.bot.data.change_to_default_activity()
 
     @commands.group(aliases=["lr"])
     @commands.check(is_admin)

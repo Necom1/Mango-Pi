@@ -12,7 +12,6 @@ from Components.KeyReader import KeyReader
 from Components.HelpMenu import CustomHelpCommand
 from Components.PrintColor import PrintColors as Colors
 
-
 status_translator = {"online": discord.Status.online, "idle": discord.Status.idle,
                      "dnd": discord.Status.dnd, "invisible": discord.Status.invisible}
 
@@ -85,7 +84,18 @@ class MangoPi(commands.Bot):
         self.loaded_cogs = {}
         self.unloaded_cogs = {}
 
-        super().__init__(self, help_command=CustomHelpCommand(), prefix=commands.when_mentioned_or(data.prefix))
+        intents = discord.Intents(
+            guilds=True,
+            members=True,
+            bans=True,
+            emojis=True,
+            voice_states=True,
+            messages=True,
+            guild_reactions=True
+        )
+
+        super().__init__(self, help_command=CustomHelpCommand(), prefix=commands.when_mentioned_or(data.prefix),
+                         intents=intents)
 
         self.app_info = None
         self.data = None
@@ -364,3 +374,12 @@ class BotData:
                 temp1 = "play"
 
             return discord.Activity(name=temp2, type=activity_translator[temp1])
+
+    async def change_to_default_activity(self):
+        """
+        A method to change the bot status and activity with data from BotData
+        """
+        status = self.bot.data.default_status
+        activity = self.bot.data.default_activity
+
+        await self.bot.change_presence(status=status, activity=activity)

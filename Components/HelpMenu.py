@@ -115,7 +115,7 @@ class EmbedPaginator:
             list of commands
         """
         embed = discord.Embed(colour=self.color,
-                              title=f"**__{heading}__** Cog" if heading != "​No Category" else heading)
+                              title=f"**__{heading}__** Commands" if heading != "​No Category" else heading)
 
         ret = process_command_list(embed, commands)
         for i in ret:
