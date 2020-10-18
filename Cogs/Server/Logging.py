@@ -595,24 +595,34 @@ class Logging(commands.Cog):
         except KeyError:
             return
 
-        embed = None
+        entry_data = None
 
-        async for entry in guild.audit_logs(action=discord.AuditLogAction.ban, limit=3):
+        # wait for entry to be logged
+        await asyncio.sleep(1)
+
+        async for entry in guild.audit_logs(action=discord.AuditLogAction.ban,
+                                            after=(datetime.datetime.utcnow() - datetime.timedelta(hours=1))):
             if entry.target.id == user.id:
-                embed = discord.Embed(
-                    timestamp=entry.created_at,
-                    colour=0xED4C67,
-                    description=f"**{user.name}** got hit by a massive hammer and vanished into the "
-                                f"shadow realm!"
-                )
-                embed.set_footer(text="Banned")
-                embed.set_thumbnail(url=user.avatar_url)
-                embed.set_author(name="🔨 Banned!", icon_url=guild.icon_url)
-                embed.add_field(inline=False, name="Banned by:", value=entry.user.mention)
-                embed.add_field(inline=False, name="Reason:", value=entry.reason)
-                embed.add_field(name="User ID", value=user.id)
-                embed.add_field(name="Ban Time", value=entry.created_at.strftime("%#d %B %Y, %I:%M %p UTC"))
+                entry_data = {"time": entry.created_at, "by": entry.user, "reason": entry.reason}
                 break
+
+        embed = discord.Embed(
+            timestamp=datetime.datetime.utcnow() if not entry_data else entry_data["time"],
+            colour=0xED4C67,
+            description=f"**{user.name}** got hit by a massive hammer and vanished into the "
+                        f"shadow realm!"
+        )
+        embed.set_footer(text="Banned")
+        embed.set_thumbnail(url=user.avatar_url)
+        embed.set_author(name="🔨 Banned!", icon_url=guild.icon_url)
+        embed.add_field(name="User ID", value=user.id)
+
+        if entry_data:
+            embed.add_field(inline=False, name="Banned by:", value=entry_data["by"])
+            embed.add_field(inline=False, name="Reason:", value=entry_data["reason"])
+            embed.add_field(name="Ban Time", value=entry_data["time"].strftime("%#d %B %Y, %I:%M %p UTC"))
+        else:
+            embed.add_field(inline=False, name="404 Not Found", value="Failed to fetch ban reason and by whom")
 
         for i in data:
             if i.data['ban'] and embed:

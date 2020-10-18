@@ -6,6 +6,7 @@ import asyncio
 import discord
 import requests
 from discord.ext import commands
+from Components.MangoPi import MangoPi
 
 # References:
 # https://www.youtube.com/playlist?list=PLW3GfRiBCHOiEkjvQj0uaUB1Q-RckYnj9
@@ -22,8 +23,8 @@ class ModTools(commands.Cog):
 
     Attributes
     ----------
-    bot : commands.Bot
-        commands.Bot reference
+    bot : MangoPi
+        Mango Pi Bot reference
     role : list
         command cooldown for roleall or unrole command
     instance : list
@@ -31,7 +32,7 @@ class ModTools(commands.Cog):
     cooling : list
         list of server currently under 1hr cooldown of download_emote command
     """
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: MangoPi):
         """
         Constructor for ModTools class.
 
@@ -302,26 +303,26 @@ class ModTools(commands.Cog):
         self.cooling.remove(ctx.guild.id)
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to add Cog
     """
     bot.add_cog(ModTools(bot))
     print("Load Cog:\tModTools")
 
 
-def teardown(bot: commands.Bot):
+def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to remove Cog
     """
     bot.remove_cog("ModTools")

@@ -19,6 +19,8 @@ def process_description(description: str):
     str
         processed string
     """
+    if not description:
+        return "No Info Provided"
     return description.rpartition('\n\n')[0] if "\n\n" in description else description
 
 
@@ -284,7 +286,7 @@ class CustomHelpCommand(HelpCommand):
             return
 
         signature = self.get_command_signature(group)
-        description = process_description(group.help).replace("\n", " ")
+        description = process_description(group.help if group.help else group.description).replace("\n", " ")
         description = f"{description}\n\n__Sub-commands__:" if len(description) > 0 else "__Sub-commands__:"
         embed = discord.Embed(
             colour=self.paginator.color, title=signature, description=description

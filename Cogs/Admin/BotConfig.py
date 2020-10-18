@@ -128,3 +128,23 @@ class BotConfig(commands.Cog):
             return await ctx.send("System currently busy, try again later")
 
         await ctx.message.add_reaction(emoji="🗑️")
+
+    @commands.group(aliases=["rsa"])
+    async def random_status_activity(self, ctx: commands.Context):
+        """Group command for random status and activities, no sub-command invoke will bring up list RSA status menu"""
+        if not ctx.invoked_subcommand:
+            desc = ("🟢" if self.bot.data.rsa[1] else "🔴") + " Random Status\n"
+            desc += ("🟢" if self.bot.data.rsa[2] else "🔴") + " Random Activities\n"
+            desc += f"**Delay / Interval**: {self.bot.data.rsa[3]} seconds"
+
+            embed = discord.Embed(
+                colour=0x32ff7e if self.bot.data.rsa[0] else 0xff3838,
+                title="Random Status and Activities Menu",
+                description=desc
+            )
+
+            if len(self.bot.data.activities) > 0:
+                more = [f"> {i}" for i in self.bot.data.activities]
+                embed.add_field(inline=False, name="Activities", value="\n".join(more))
+
+            await ctx.send(embed=embed)
