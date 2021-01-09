@@ -131,10 +131,12 @@ class Management(commands.Cog):
                 target = await self.bot.fetch_user(target)
             except discord.NotFound:
                 return await ctx.send("Can not find that user.")
+
         try:
             ret = self.bot.data.add_staff(target.id)
         except RuntimeError:
             return await ctx.send("Current busy, please try again later.")
+
         if ret:
             await ctx.send(ret)
         else:

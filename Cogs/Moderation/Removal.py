@@ -1,6 +1,7 @@
 import typing
 import asyncio
 import discord
+import datetime
 from discord.ext import commands
 from Components.DelayedTask import time_converter
 from Components.TemporaryBan import TemporaryBan, ban_over
@@ -234,14 +235,35 @@ class Removal(commands.Cog):
     @commands.command(aliases=["idban", "IDBan"])
     @commands.guild_only()
     @commands.has_permissions(ban_members=True)
-    async def id_ban(self, ctx: commands.Context, target: typing.Union[discord.Member, discord.User, int],
-                     delete_days: typing.Optional[int] = 0, *, reason: str = "No reason"):
-        """Ban a user from the server by their discord ID"""
+    async def id_ban(self, ctx: commands.Context, target: commands.Greedy[int], *, reason: str = "No reason"):
+        """Ban a user from the server by their discord ID, likely won't remove recent message"""
         reason = f'{ctx.author}[{ctx.author.id}]: "{reason}"'
-        if isinstance(target, int):
-            target = await self.bot.fetch_user(target)
-        await ctx.guild.ban(target, delete_message_days=delete_days, reason=reason)
-        await ctx.message.add_reaction(emoji='✅')
+        success = ""
+        fail = ""
+        count = 0
+        for i in target:
+            usr = await self.bot.fetch_user(i)
+            try:
+                await ctx.guild.ban(usr, reason=reason)
+            except discord.Forbidden:
+                return await ctx.send("I don't have the ability to ban someone~")
+            except discord.HTTPException:
+                fail += f"<@!{i}>\n"
+            else:
+                success += f"<@!{i}>\n"
+                count += 1
+
+        embed = discord.Embed(
+            colour=0xfbc531,
+            title="Report",
+            timestamp=datetime.datetime.utcnow()
+        )
+        embed.set_footer(text=f"Successfully banned {count} users from this server")
+        if success != "":
+            embed.add_field(inline=False, name="Successful Bans", value=success)
+        if fail != "":
+            embed.add_field(inline=False, name="Unsuccessful Bans", value=fail)
+        await ctx.send(embed=embed)
 
     @commands.command()
     @commands.guild_only()

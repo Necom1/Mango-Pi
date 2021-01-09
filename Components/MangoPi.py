@@ -172,13 +172,13 @@ class MangoPi(commands.Bot):
         """
         # Send appropriate error message on command error
         # Code Reference: From Commando950#0251 (119533809338155010) > https://github.com/Commando950
-        safe = [commands.CommandNotFound,
+        safe = (commands.CommandNotFound,
                 commands.MissingPermissions,
                 commands.BadArgument,
                 commands.MissingPermissions,
                 commands.CheckFailure,
-                commands.errors.MissingRequiredArgument]
-        if isinstance(error, tuple(safe)):
+                commands.errors.MissingRequiredArgument)
+        if isinstance(error, safe):
             return
         print(f"{Colors.WARNING}{ctx.channel} > {ctx.author} : {ctx.message.content}{Colors.END}")
         raise error

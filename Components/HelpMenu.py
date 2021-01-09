@@ -266,10 +266,10 @@ class CustomHelpCommand(HelpCommand):
             return
 
         signature = self.get_command_signature(command)
-        description = command.help.replace("\n", " ") if not command.description else \
-            command.description.replace("\n", " ")
+        description = command.description if command.description else command.help
         if description == "" or not description:
             description = "No Info Provided"
+        description = description.replace("\n", " ")
         embed = discord.Embed(colour=self.paginator.color, description=description, title=signature)
         await self.get_destination().send(embed=embed)
 

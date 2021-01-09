@@ -96,12 +96,16 @@ class Scanner(commands.Cog):
                 self.data[guild].clear()
             except KeyError:
                 self.data.update({guild: {}})
+                
             data = self.s_db.find({"guild": guild})
             name = self.n_db.find_one({"_id": guild})
-            try:
-                self.names[guild] = name["name"]
-            except KeyError:
-                self.names.update({guild: name["name"]})
+
+            if name:
+                try:
+                    self.names[guild] = name["name"]
+                except KeyError:
+                    self.names.update({guild: name["name"]})
+
         for i in data:
             try:
                 self.data[i["guild"]].update({i["name"]: Detector(i)})

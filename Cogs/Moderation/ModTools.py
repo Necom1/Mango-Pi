@@ -59,41 +59,47 @@ class ModTools(commands.Cog):
         # reference: https://github.com/AlexFlipnote/discord_bot.py/blob/master/cogs/mod.py
         if amount > 500:
             return await ctx.send("Please try to keep amount of messages to delete under 500, action cancelled.")
+
         special = " "
+        check = None
         if not target:
-            check = None
+            pass
         elif isinstance(target, (discord.Member, discord.User, int)):
-            def check(m):
-                return m.author.id == target if isinstance(target, int) else target.id
+            def thing(m):
+                return m.author.id == (target if isinstance(target, int) else target.id)
+            check = thing
             special = f" **from {target}** "
         else:
             target = target.lower()
-            if target not in ['embed', 'mention', 'attachments', 'attach', 'attachment', 'mentions', 'embeds',
-                              'contain', 'contains', 'have', 'image', 'images', 'video', 'media']:
+            if target not in ('embed', 'mention', 'attachments', 'attach', 'attachment', 'mentions', 'embeds',
+                              'contain', 'contains', 'have', 'image', 'images', 'video', 'media'):
                 return await ctx.send("Unknown operation, please check your input")
 
-            if target in ['embed', 'embeds']:
-                def check(m):
+            if target in ('embed', 'embeds'):
+                def thing(m):
                     return len(m.embeds) > 0
+                check = thing
                 special = ' **with embeds** '
-            elif target in ['attachments', 'attach', 'attachment']:
-                def check(m):
+            elif target in ('attachments', 'attach', 'attachment'):
+                def thing(m):
                     return len(m.attachments) > 0
+                check = thing
                 special = ' **with attachments** '
-            elif target in ['mention', 'mentions']:
-                def check(m):
+            elif target in ('mention', 'mentions'):
+                def thing(m):
                     return (len(m.mentions) > 0) or (len(m.role_mentions) > 0)
+                check = thing
                 special = ' **with mentions** '
-            elif target in ['contain', 'contains', 'have']:
+            elif target in ('contain', 'contains', 'have'):
                 if not word:
-                    await ctx.send("Please remember to input words to scan for after the operation")
-                    return
+                    return await ctx.send("Please remember to input words to scan for after the operation")
                 else:
-                    def check(m):
+                    def thing(m):
                         return word.lower() in m.content.lower()
+                    check = thing
                     special = f" containing `{word.lower()}` "
-            elif target in ['image', 'images']:
-                def check(m):
+            elif target in ('image', 'images'):
+                def thing(m):
                     if m.attachments:
                         for i in m.attachments:
                             if i.url.lower.endswith(('.jpg', '.png', '.jpeg', '.gif', '.webp', '.bmp', '.tiff')):
@@ -102,9 +108,10 @@ class ModTools(commands.Cog):
                         for i in m.embeds:
                             if i.image or i.thumbnail:
                                 return True
+                check = thing
                 special = " **with images** "
-            elif target in ['video', 'media']:
-                def check(m):
+            elif target in ('video', 'media'):
+                def thing(m):
                     if m.attachments:
                         for i in m.attachments:
                             if i.url.endswith(('.mp4', '.mov', '.avi', '.mkv', '.webm')):
@@ -113,6 +120,7 @@ class ModTools(commands.Cog):
                         for i in m.embeds:
                             if i.video:
                                 return True
+                check = thing
                 special = " **with videos** "
             else:
                 print(f"Error around Line 91 -> {ctx.message.content}")
@@ -267,7 +275,7 @@ class ModTools(commands.Cog):
             os.makedirs(f"tmp/{ctx.guild.id}/animated")
             os.makedirs(f"tmp/{ctx.guild.id}/normal")
         except OSError:
-            return await ctx.send("Error happened on line 298 of **Moderation.py**, please report this to Necomi")
+            return await ctx.send("Error happened on line 278 of **ModTools.py**, please report this to Necomi#1555")
 
         message = await ctx.send("Downloading emotes right now, going to take a while.")
 

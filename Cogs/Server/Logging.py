@@ -383,6 +383,9 @@ class Logging(commands.Cog):
             change("Content Filter Change", f"`{before.explicit_content_filter}`",
                    f"`{after.explicit_content_filter}`")
 
+        if embed.fields == discord.Embed.Empty or len(embed.fields) < 1:
+            return
+
         for i in data:
             if i.data['server_update']:
                 channel = self.bot.get_channel(i.channel)
@@ -415,39 +418,29 @@ class Logging(commands.Cog):
 
         now = datetime.datetime.utcnow()
 
-        embed = None
-        label = ""
+        embed_stuff = {
+            "🎤": (0x7bed9f, f"{member.mention} **joined** `{after.channel}`"),
+            "🚪": (0xff6b81, f"{member.mention} **left** `{before.channel}`"),
+            "🔄": (0xeccc68, f"{member.mention} **switched** from `{before.channel}` to `{after.channel}`"),
+            "📺": (0x6c5ce7, f"{member.mention} is **Live** in `{after.channel}`!"),
+            "⏹": (0x6c5ce7, f"{member.mention} is no longer live.")
+        }
 
-        if before.channel is None:
-            embed = discord.Embed(
-                colour=0x7bed9f,
-                description=f"{member.mention} **joined** `{after.channel}`"
-            )
+        if not before.channel:
             label = "🎤"
-        elif after.channel is None:
-            embed = discord.Embed(
-                colour=0xff6b81,
-                description=f"{member.mention} **left** `{before.channel}`"
-            )
+        elif not after.channel:
             label = "🚪"
         elif before.channel != after.channel:
-            embed = discord.Embed(
-                colour=0xeccc68,
-                description=f"{member.mention} **switched** from `{before.channel}` to `{after.channel}`",
-            )
             label = "🔄"
         elif after.self_stream and not before.self_stream:
-            embed = discord.Embed(
-                colour=0x6c5ce7,
-                description=f"{member.mention} is **Live** in `{after.channel}`!"
-            )
             label = "📺"
         elif not after.self_stream and before.self_stream:
-            embed = discord.Embed(
-                colour=0x6c5ce7,
-                description=f"{member.mention} is no longer live."
-            )
             label = "⏹"
+        else:
+            return
+
+        embed = discord.Embed(colour=embed_stuff[label][0], timestamp=now, description=embed_stuff[label][1])
+        embed.set_footer(icon_url=member.avatar_url_as(size=64), text=label)
 
         for i in data:
             if i.data['vc_update']:
@@ -457,8 +450,6 @@ class Logging(commands.Cog):
                     return
 
                 if embed:
-                    embed.set_footer(icon_url=member.avatar_url_as(size=64), text=label)
-                    embed.timestamp = now
                     await channel.send(embed=embed)
 
     @commands.Cog.listener()
@@ -533,6 +524,7 @@ class Logging(commands.Cog):
             data = self.memory[member.guild.id]
         except KeyError:
             return
+
         time = datetime.datetime.utcnow()
 
         embed = discord.Embed(
@@ -547,23 +539,27 @@ class Logging(commands.Cog):
                         value=time.strftime("%#d %B %Y, %I:%M %p UTC"))
 
         kicked = None
+        
+        def check(e: discord.AuditLogEntry):
+            return e.target.id == member.id and e.action == discord.AuditLogAction.kick
 
-        async for entry in member.guild.audit_logs(limit=1, action=discord.AuditLogAction.kick):
-            temp = (time - entry.created_at).total_seconds()
-            if entry.target.id == member.id and temp < 4:
-                kicked = discord.Embed(
-                    colour=0xe74c3c,
-                    timestamp=entry.created_at,
-                    description=f"**{entry.target.name}** got drop kicked out of **{member.guild}**!"
-                )
-                kicked.set_thumbnail(url=member.avatar_url)
-                kicked.set_author(name="👢 Booted!", icon_url=member.guild.icon_url)
-                kicked.set_footer(text="Kicked")
-                kicked.add_field(inline=False, name="Kicked by:", value=entry.user.mention)
-                kicked.add_field(inline=False, name="Reason:", value=entry.reason)
-                kicked.add_field(name="User ID", value=member.id)
-                kicked.add_field(name="Kick Time", value=entry.created_at.strftime("%#d %B %Y, %I:%M %p UTC"))
-                break
+        entry = await member.guild.audit_logs(
+            action=discord.AuditLogAction.kick, after=(datetime.datetime.utcnow() - datetime.timedelta(minutes=1))
+        ).find(check)
+
+        if entry:
+            kicked = discord.Embed(
+                colour=0xe74c3c,
+                timestamp=entry.created_at,
+                description=f"**{entry.target.name}** got drop kicked out of **{member.guild}**!"
+            )
+            kicked.set_thumbnail(url=member.avatar_url)
+            kicked.set_author(name="👢 Booted!", icon_url=member.guild.icon_url)
+            kicked.set_footer(text="Kicked")
+            kicked.add_field(inline=False, name="Kicked by:", value=entry.user.mention)
+            kicked.add_field(inline=False, name="Reason:", value=entry.reason)
+            kicked.add_field(name="User ID", value=member.id)
+            kicked.add_field(name="Kick Time", value=entry.created_at.strftime("%#d %B %Y, %I:%M %p UTC"))
 
         for i in data:
             target = self.bot.get_channel(i.channel)
@@ -595,19 +591,16 @@ class Logging(commands.Cog):
         except KeyError:
             return
 
-        entry_data = None
-
         # wait for entry to be logged
-        await asyncio.sleep(1)
+        def check(e: discord.AuditLogEntry):
+            return e.target.id == user.id and e.action == discord.AuditLogAction.ban
 
-        async for entry in guild.audit_logs(action=discord.AuditLogAction.ban,
-                                            after=(datetime.datetime.utcnow() - datetime.timedelta(hours=1))):
-            if entry.target.id == user.id:
-                entry_data = {"time": entry.created_at, "by": entry.user, "reason": entry.reason}
-                break
+        entry = await guild.audit_logs(
+            action=discord.AuditLogAction.ban, limit=5
+        ).find(check)
 
         embed = discord.Embed(
-            timestamp=datetime.datetime.utcnow() if not entry_data else entry_data["time"],
+            timestamp=datetime.datetime.utcnow() if not entry else entry.created_at,
             colour=0xED4C67,
             description=f"**{user.name}** got hit by a massive hammer and vanished into the "
                         f"shadow realm!"
@@ -617,12 +610,12 @@ class Logging(commands.Cog):
         embed.set_author(name="🔨 Banned!", icon_url=guild.icon_url)
         embed.add_field(name="User ID", value=user.id)
 
-        if entry_data:
-            embed.add_field(inline=False, name="Banned by:", value=entry_data["by"])
-            embed.add_field(inline=False, name="Reason:", value=entry_data["reason"])
-            embed.add_field(name="Ban Time", value=entry_data["time"].strftime("%#d %B %Y, %I:%M %p UTC"))
+        if entry:
+            embed.add_field(inline=False, name="Banned by:", value=entry.user)
+            embed.add_field(inline=False, name="Reason:", value=entry.reason)
+            embed.add_field(name="Ban Time", value=entry.created_at.strftime("%#d %B %Y, %I:%M %p UTC"))
         else:
-            embed.add_field(inline=False, name="404 Not Found", value="Failed to fetch ban reason and by whom")
+            embed.add_field(inline=False, name="404 Not Found", value="Failed to fetch ban data from audit log")
 
         for i in data:
             if i.data['ban'] and embed:
