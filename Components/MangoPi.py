@@ -2,6 +2,7 @@ import os
 import json
 import random
 import discord
+import asyncio
 import datetime
 import platform
 import traceback
@@ -11,6 +12,7 @@ from Components.BotData import BotData
 from Components.KeyReader import KeyReader
 from Components.HelpMenu import CustomHelpCommand
 from Components.PrintColor import PrintColors as Colors
+from Components.MessageTools import embed_message, split_string
 
 
 def offline(ctx: commands.Context, ignore_dm: bool = False):
@@ -171,14 +173,48 @@ class MangoPi(commands.Bot):
             when error that isn't caught
         """
         # Send appropriate error message on command error
-        # Code Reference: From Commando950#0251 (119533809338155010) > https://github.com/Commando950
-        safe = (commands.CommandNotFound,
-                commands.MissingPermissions,
-                commands.BadArgument,
-                commands.MissingPermissions,
-                commands.CheckFailure,
-                commands.errors.MissingRequiredArgument)
+        # Help From Commando950#0251 (119533809338155010) > https://github.com/Commando950
+        safe = (commands.MissingPermissions,
+                commands.CheckFailure)
         if isinstance(error, safe):
             return
+
+        if isinstance(error, (commands.CommandNotFound, commands.BadArgument, commands.errors.MissingRequiredArgument)):
+            emote = "😕"
+            if isinstance(error, commands.CommandNotFound):
+                emote = "❓"
+            try:
+                await ctx.message.add_reaction(emoji=emote)
+                await asyncio.sleep(5)
+                await ctx.message.remove_reaction(emoji=emote, member=ctx.bot.user)
+            except (discord.HTTPException, discord.Forbidden):
+                pass
+            return
+
         print(f"{Colors.WARNING}{ctx.channel} > {ctx.author} : {ctx.message.content}{Colors.END}")
+
+        targets = []
+        for k in ("dm", "channel"):
+            for i in self.data.log_report_channels[k]:
+                temp = self.get_user(i) if k == "dm" else self.get_channel(i)
+                if temp:
+                    targets.append(temp)
+
+        if len(targets) > 0:
+            try:
+                raise error
+            except Exception:
+                mes = split_string(f"{traceback.format_exc()}", 1900)
+
+            for i in targets:
+                embeds = embed_message(ctx.message, True)
+                first = True
+                for k in embeds:
+                    await i.send(content="Error has occurred while running this command" if first else None, embed=k)
+                    first = False
+                count = 1
+                for k in mes:
+                    await i.send(f"Error Traceback Page **{count}**:\n```python\n{k}\n```")
+                    count += 1
+
         raise error

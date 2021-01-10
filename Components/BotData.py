@@ -265,9 +265,21 @@ class BotData:
         self._db["activities"].delete_one({"activity": item})
 
     @property
+    def log_report_channels(self):
+        """
+        property that returns all log report channel IDs stored inside the bot
+
+        Returns
+        -------
+        dict
+            dictionary storing IDs that dictates channel type by key of "dm" or "channel"
+        """
+        return self._data["console"]
+
+    @property
     def activities(self):
         """
-        method to return RSA activities data
+        property that returns RSA activities data
 
         Returns
         -------
@@ -291,7 +303,7 @@ class BotData:
     @property
     def status(self):
         """
-        Method property to return status data
+        property that returns status data
 
         Returns
         -------
@@ -303,7 +315,7 @@ class BotData:
     @property
     def default_status(self):
         """
-        Method property to return default status for the bot
+        property that returns default status for the bot
 
         Returns
         -------
@@ -316,7 +328,7 @@ class BotData:
     @property
     def default_activity(self):
         """
-        Method property to return default activity for the bot
+        property that returns default activity for the bot
 
         Returns
         -------

@@ -118,12 +118,12 @@ class Prefix(commands.Cog):
             # inserts the new prefix setting over the default
             self.db.insert_one({"_id": ctx.guild.id, "prefix": pre})
             self.prefix.update({ctx.guild.id: pre})
-            await ctx.reply(f"Server prefix have been set to: **{pre}**.")
+            await ctx.reply(f"Server prefix have been set to: ** {pre} **.")
         else:
             # changing the current prefix setting
             self.db.update_one({"_id": ctx.guild.id}, {"$set": {"prefix": pre}})
             self.prefix[ctx.guild.id] = pre
-            await ctx.reply(f"Server prefix have been updated to: **{pre}**.")
+            await ctx.reply(f"Server prefix have been updated to: ** {pre} **.")
 
 
 def setup(bot: MangoPi):

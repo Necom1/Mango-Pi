@@ -91,8 +91,8 @@ class BotConfig(commands.Cog):
         Group command for log report, no sub-command invoke will bring up list of channels and user to report to.
         """
         if not ctx.invoked_subcommand:
-            dm = [f"<@!{i}>" for i in self.bot.data.console_dm]
-            channels = [f"<#{i}>" for i in self.bot.data.console_channels]
+            dm = [f"<@!{i}>" for i in self.bot.data.log_report_channels["dm"]]
+            channels = [f"<#{i}>" for i in self.bot.data.log_report_channels["channel"]]
 
             embed = discord.Embed(
                 title="Log Report to",
