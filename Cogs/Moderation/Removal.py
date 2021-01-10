@@ -92,7 +92,7 @@ class Removal(commands.Cog):
         """Kick the specified members from the server."""
         # Reference: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html
         if len(targets) == 0 and len(targets) > 1:
-            return await ctx.send("Can not locate any kick targets. "
+            return await ctx.reply("Can not locate any kick targets. "
                                   "Please make sure they are currently members of this server.")
 
         reason = f'{ctx.author}[{ctx.author.id}]: "{args}"'
@@ -115,7 +115,7 @@ class Removal(commands.Cog):
             embed.add_field(name="Kick Reason", value=reason, inline=False)
             embed.set_footer(icon_url=ctx.author.avatar_url_as(size=64),
                              text=f"Kicking total of {len(targets)} members")
-            message = await ctx.send(embed=embed)
+            message = await ctx.reply(embed=embed)
             for i in valid:
                 await message.add_reaction(emoji=i)
 
@@ -154,9 +154,9 @@ class Removal(commands.Cog):
         """
         nope = self.bot.ignore_check(ctx)
         if isinstance(error, commands.MissingRequiredArgument):
-            return await ctx.send("Make sure to specify the target user to kick.", delete_after=10)
+            return await ctx.reply("Make sure to specify the target user to kick.", delete_after=10)
         elif isinstance(error, commands.BadArgument):
-            return await ctx.send("Improper usage of clear command.", delete_after=10)
+            return await ctx.reply("Improper usage of clear command.", delete_after=10)
         elif isinstance(error, discord.Forbidden):
             if nope:
                 return
@@ -165,7 +165,7 @@ class Removal(commands.Cog):
                 description="I don't have the permission required to perform a kick. To do this, I will need: "
                             "**Kick Members** permission."
             )
-            return await ctx.send(embed=embed, delete_after=10)
+            return await ctx.reply(embed=embed, delete_after=10)
         elif isinstance(error, commands.MissingPermissions):
             if nope:
                 return
@@ -174,9 +174,9 @@ class Removal(commands.Cog):
                 description='You will need the permission of [Kick Members] to use this command.'
             )
             embed.set_footer(text=f"Input by {ctx.author}", icon_url=ctx.author.avatar_url)
-            return await ctx.send(embed=embed, delete_after=10)
+            return await ctx.reply(embed=embed, delete_after=10)
         else:
-            await ctx.send("Unknown error has occurred, please try again later.", delete_after=10)
+            await ctx.reply("Unknown error has occurred, please try again later.", delete_after=10)
 
     @commands.command()
     @commands.guild_only()
@@ -189,7 +189,7 @@ class Removal(commands.Cog):
         if delete_days > 7:
             delete_days = 7
         if len(targets) == 0:
-            return await ctx.send("Can not locate any ban targets. "
+            return await ctx.reply("Can not locate any ban targets. "
                                   "Please make sure they are currently members of this server.")
 
         reason = f'{ctx.author}[{ctx.author.id}]: "{args}"'
@@ -212,7 +212,7 @@ class Removal(commands.Cog):
             embed.add_field(name="Ban Reason", value=reason, inline=False)
             embed.set_footer(icon_url=ctx.author.avatar_url_as(size=64),
                              text=f"Remove Messages from the past {delete_days} days")
-            message = await ctx.send(embed=embed)
+            message = await ctx.reply(embed=embed)
             for i in valid:
                 await message.add_reaction(emoji=i)
 
@@ -246,7 +246,7 @@ class Removal(commands.Cog):
             try:
                 await ctx.guild.ban(usr, reason=reason)
             except discord.Forbidden:
-                return await ctx.send("I don't have the ability to ban someone~")
+                return await ctx.reply("I don't have the ability to ban someone~")
             except discord.HTTPException:
                 fail += f"<@!{i}>\n"
             else:
@@ -263,7 +263,7 @@ class Removal(commands.Cog):
             embed.add_field(inline=False, name="Successful Bans", value=success)
         if fail != "":
             embed.add_field(inline=False, name="Unsuccessful Bans", value=fail)
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command()
     @commands.guild_only()
@@ -303,12 +303,12 @@ class Removal(commands.Cog):
                             duration: str, *, reason: str = "No reason"):
         """Command to temporary ban a user for set number of days"""
         if len(reason) > 1000:
-            return await ctx.send("Too long of a ban reason... Try keep it under 1000 letters...")
+            return await ctx.reply("Too long of a ban reason... Try keep it under 1000 letters...")
 
         try:
             time = time_converter(duration, ctx.message.created_at)
         except ValueError as e:
-            return await ctx.send(str(e.args[0]))
+            return await ctx.reply(str(e.args[0]))
 
         try:
             self.temp_bans[ctx.guild.id]
@@ -319,7 +319,7 @@ class Removal(commands.Cog):
             try:
                 target = await self.bot.fetch_user(target)
             except discord.NotFound:
-                return await ctx.send("Can not find that user.")
+                return await ctx.reply("Can not find that user.")
 
         index = target.id
         is_new = False
@@ -329,7 +329,7 @@ class Removal(commands.Cog):
         except KeyError:
             is_new = True
             if duration.startswith('-'):
-                return await ctx.send("User is not temporary banned, unable to remove duration.")
+                return await ctx.reply("User is not temporary banned, unable to remove duration.")
             reason = f"Temporary ban until {time.strftime('%B %#d, %Y | `%I:%M %p` UTC')} for:\n **{reason}**"
             data = TemporaryBan(self.bot, ctx.message.id, ctx.guild.id, index, time, reason)
             self.temp_bans[ctx.guild.id].update({index: data})
@@ -338,14 +338,14 @@ class Removal(commands.Cog):
             try:
                 time = time_converter(duration, data.end)
             except ValueError as e:
-                return await ctx.send(str(e.args[0]))
+                return await ctx.reply(str(e.args[0]))
             await data.terminate()
             reason = f"Temporary ban until {time.strftime('%B %#d, %Y | `%I:%M %p` UTC')} for:\n **{reason}**"
             try:
                 new = TemporaryBan(self.bot, ctx.message.id, ctx.guild.id, index, time, reason)
             except ValueError:
                 await ban_over(self.bot, ctx.guild.id, index, f"{reason}\nUnbanned after time re-calculation")
-                return await ctx.send("User unbanned after time re-calculation")
+                return await ctx.reply("User unbanned after time re-calculation")
             self.temp_bans[ctx.guild.id].update({index: new})
 
         try:
@@ -368,7 +368,7 @@ class Removal(commands.Cog):
         ).set_author(icon_url=str(target.avatar_url_as(size=64)), name=title)
         embed.add_field(name="Expected unban time: ", value=time.strftime('%B %#d, %Y | `%I:%M %p` UTC'))
         embed.set_footer(text="Unban ")
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command()
     @commands.guild_only()
@@ -390,13 +390,13 @@ class Removal(commands.Cog):
     async def temporary_ban_list(self, ctx: commands.Context, page: int = 1):
         """Return a list of temporarily banned users (that is under bot's system)"""
         if page <= 0:
-            return await ctx.send("Page number can't be less than 1")
+            return await ctx.reply("Page number can't be less than 1")
         try:
             data = list(self.temp_bans[ctx.guild.id].values())
             if len(data) == 0:
                 raise KeyError("empty")
         except KeyError:
-            return await ctx.send("No temporary bans that I am aware of.")
+            return await ctx.reply("No temporary bans that I am aware of.")
 
         limit = 5
         total_page = (len(data) // limit) + 1
@@ -413,7 +413,7 @@ class Removal(commands.Cog):
             embed.add_field(name=f"User ID: {data[i].user_id}",
                             value=f"__<@!{data[i].user_id}>__\n{data[i].reason}", inline=False)
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @ban.error
     @id_ban.error
@@ -437,9 +437,9 @@ class Removal(commands.Cog):
         """
         nope = self.bot.ignore_check(ctx)
         if isinstance(error, commands.MissingRequiredArgument):
-            return await ctx.send("Make sure to specify the target user to ban.", delete_after=10)
+            return await ctx.reply("Make sure to specify the target user to ban.", delete_after=10)
         elif isinstance(error, commands.BadArgument):
-            return await ctx.send("Improper usage of ban command.", delete_after=10)
+            return await ctx.reply("Improper usage of ban command.", delete_after=10)
         elif isinstance(error, discord.Forbidden):
             if nope:
                 return
@@ -448,7 +448,7 @@ class Removal(commands.Cog):
                 description="I don't have the permission required to ban members. To do this, I will need: "
                             "**Ban Members** permission."
             )
-            return await ctx.send(embed=embed, delete_after=10)
+            return await ctx.reply(embed=embed, delete_after=10)
         elif isinstance(error, commands.MissingPermissions):
             if nope:
                 return
@@ -457,8 +457,8 @@ class Removal(commands.Cog):
                 description='You will need the permission of [Ban Members] to use this command.'
             )
             embed.set_footer(text=f"Input by {ctx.author}", icon_url=ctx.author.avatar_url)
-            return await ctx.send(embed=embed, delete_after=10)
+            return await ctx.reply(embed=embed, delete_after=10)
         elif isinstance(error, discord.NotFound):
-            return await ctx.send("Can not find target user. Please double check the ID you entered.", delete_after=10)
+            return await ctx.reply("Can not find target user. Please double check the ID you entered.", delete_after=10)
         else:
-            await ctx.send("Unknown error has occurred, please try again later.", delete_after=10)
+            await ctx.reply("Unknown error has occurred, please try again later.", delete_after=10)

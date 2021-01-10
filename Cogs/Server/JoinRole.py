@@ -124,11 +124,11 @@ class JoinRole(commands.Cog):
         if not ctx.invoked_subcommand:
             data = self.search(ctx.guild.id)
             if not isinstance(data, AutoRole):
-                await ctx.send("Join role system not set")
+                await ctx.reply("Join role system not set")
             else:
                 temp = data.to_str()
                 status = "Join role list " + ("[On]" if data.power else "[Off]")
-                await ctx.send(embed=discord.Embed(
+                await ctx.reply(embed=discord.Embed(
                     title=status,
                     colour=0x2ecc71 if data.power else 0xe74c3c,
                     description=temp
@@ -139,11 +139,11 @@ class JoinRole(commands.Cog):
         """Removes all the roles within the Join Role system"""
         data = self.search(ctx.guild.id)
         if not data:
-            await ctx.send("Nothing to purge")
+            await ctx.reply("Nothing to purge")
         else:
             self.db.delete_one({"_id": ctx.guild.id})
             self.update(ctx.guild.id)
-            await ctx.send("Join role system purged.")
+            await ctx.reply("Join role system purged.")
 
     @join_role.command(aliases=['t'])
     async def toggle(self, ctx: commands.Context):
@@ -151,12 +151,12 @@ class JoinRole(commands.Cog):
         data = self.search(ctx.guild.id)
 
         if not data:
-            await ctx.send("No join role system for this server")
+            await ctx.reply("No join role system for this server")
         else:
             data.power = not data.power
             status = "On" if data.power else "Off"
             self.db.update_one({"_id": ctx.guild.id}, {"$set": {"switch": data.power}})
-            await ctx.send(f"Join role system is now {status}")
+            await ctx.reply(f"Join role system is now {status}")
 
     @join_role.command(aliases=['+'])
     async def add(self, ctx: commands.Context, *roles: discord.Role):
@@ -171,7 +171,7 @@ class JoinRole(commands.Cog):
             for i in roles:
                 temp += f"{i.mention}\n"
             self.update(ctx.guild.id)
-            await ctx.send(embed=discord.Embed(
+            await ctx.reply(embed=discord.Embed(
                 title="Added these role(s) into the join role system",
                 colour=0x74b9ff,
                 description=temp
@@ -190,7 +190,7 @@ class JoinRole(commands.Cog):
             embed = discord.Embed(title="Updated role(s) in the join role system", colour=0x55efc4)
             embed.add_field(name="Added Role(s)", value="None" if adds == "" else adds, inline=False)
             embed.add_field(name="Failed to add", value="None" if fails == "" else fails, inline=False)
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
     @join_role.command(aliases=['-'])
     async def remove(self, ctx: commands.Context, *roles: typing.Union[discord.Role, int]):
@@ -198,7 +198,7 @@ class JoinRole(commands.Cog):
         data = self.search(ctx.guild.id)
 
         if not data:
-            return await ctx.send("Join role system is not setup")
+            return await ctx.reply("Join role system is not setup")
 
         removes = ""
         fails = ""
@@ -220,4 +220,4 @@ class JoinRole(commands.Cog):
         )
         embed.add_field(name="Removed roles", value="None" if removes == "" else removes, inline=False)
         embed.add_field(name="Failed to remove", value="None" if fails == "" else fails, inline=False)
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)

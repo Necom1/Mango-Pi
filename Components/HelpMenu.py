@@ -189,20 +189,6 @@ class CustomHelpCommand(HelpCommand):
 
         return f"{self.clean_prefix}{alias} {signature}"
 
-    def get_destination(self):
-        """
-        Method that returns the appropriate reply location base on if dm_help instead is True or not
-
-        Returns
-        -------
-        discord.User
-            if dm_help is True
-        discord.Channel
-            if dm_help is False
-        """
-        ctx = self.context
-        return ctx.author if self.dm_help else ctx.channel
-
     async def prepare_help_command(self, ctx: Context, command: str = None):
         """
         Async method that prepares help command, usually called before anything.
@@ -251,7 +237,7 @@ class CustomHelpCommand(HelpCommand):
             await self.interactive(special)
         else:
             for i in special:
-                await self.get_destination().send(embed=i)
+                await (self.context.author.send(embed=i) if self.dm_help else self.context.reply(embed=i))
 
     async def send_command_help(self, command: Command):
         """
@@ -271,7 +257,7 @@ class CustomHelpCommand(HelpCommand):
             description = "No Info Provided"
         description = description.replace("\n", " ")
         embed = discord.Embed(colour=self.paginator.color, description=description, title=signature)
-        await self.get_destination().send(embed=embed)
+        await (self.context.author.send(embed=embed) if self.dm_help else self.context.reply(embed=embed))
 
     async def send_group_help(self, group: Group):
         """
@@ -298,7 +284,7 @@ class CustomHelpCommand(HelpCommand):
 
         for i in range(len(result)):
             result[i].set_footer(icon_url=icon, text=f"{i + 1} / {len(result)} Pages")
-            await self.get_destination().send(embed=result[i])
+            await (self.context.author.send(embed=result[i]) if self.dm_help else self.context.reply(embed=result[i]))
 
     async def send_cog_help(self, cog: Cog):
         """
@@ -322,7 +308,7 @@ class CustomHelpCommand(HelpCommand):
 
         for i in range(len(result)):
             result[i].set_footer(icon_url=icon, text=f"{i + 1} / {len(result)} Pages")
-            await self.get_destination().send(embed=result[i])
+            await (self.context.author.send(embed=result[i]) if self.dm_help else self.context.reply(embed=result[i]))
 
     async def interactive(self, data: list):
         """
@@ -349,7 +335,7 @@ class CustomHelpCommand(HelpCommand):
         current = 0
         ctx = self.context
 
-        message = await self.get_destination().send(embed=data[current])
+        message = await self.context.reply(embed=data[current])
         for i in reacts:
             await message.add_reaction(emoji=i)
 

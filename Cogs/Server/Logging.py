@@ -156,7 +156,7 @@ class Logging(commands.Cog):
             embed.set_footer(icon_url=self.bot.user.avatar_url_as(size=64),
                              text="Now do the lc command followed by one of the above")
 
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
     @log_channels.command(aliases=["l"])
     async def list(self, ctx: commands.Context):
@@ -164,7 +164,7 @@ class Logging(commands.Cog):
         try:
             data = self.memory[ctx.guild.id]
         except KeyError:
-            await ctx.send("This server don't have any log channel.")
+            await ctx.reply("This server don't have any log channel.")
             return
 
         message = "=========================\nList of log channels:\n-------------------------\n"
@@ -174,7 +174,7 @@ class Logging(commands.Cog):
         message += "========================="
         new = split_string(message, 2000)
         for i in new:
-            await ctx.send(i)
+            await ctx.reply(i)
 
     @log_channels.command(aliases=["+", "a"])
     async def add(self, ctx: commands.Context, channel: discord.TextChannel = None):
@@ -183,7 +183,7 @@ class Logging(commands.Cog):
         data = self.find(ctx.guild.id, channel.id)
 
         if data:
-            await ctx.send(f"**#{channel}** is already a log channel.")
+            await ctx.reply(f"**#{channel}** is already a log channel.")
         else:
             f = False
             self.db.insert_one(
@@ -191,7 +191,7 @@ class Logging(commands.Cog):
                  "unban": f, "trigger": f, "raid": f, "member_update": f, "server_update": f, "vc_update": f}
             )
             self.update(ctx.guild.id)
-            await ctx.send(f"**#{channel}** has been set as a log channel")
+            await ctx.reply(f"**#{channel}** has been set as a log channel")
 
     @log_channels.command(aliases=['s'])
     async def setting(self, ctx: commands.Context, channel: discord.TextChannel = None):
@@ -202,12 +202,12 @@ class Logging(commands.Cog):
 
         if isinstance(data, Notify):
             if channel.id in self.instance:
-                return await ctx.send(f"There is a instance of setting menu for {channel.mention} already, "
+                return await ctx.reply(f"There is a instance of setting menu for {channel.mention} already, "
                                       "try again later.")
 
             self.instance.append(channel.id)
 
-            message = await ctx.send("Processing . . .")
+            message = await ctx.reply("Processing . . .")
             ret = "First"
             while ret in ["First", "Continue"]:
                 ret = await self.setting_menu(channel, message, data, ctx.author, ret == "Continue")
@@ -223,7 +223,7 @@ class Logging(commands.Cog):
 
             self.instance.remove(channel.id)
         else:
-            await ctx.send(f"**#{channel}** is not a log channel")
+            await ctx.reply(f"**#{channel}** is not a log channel")
 
     async def setting_menu(self, channel: discord.TextChannel, message: discord.Message, data: Notify,
                            original_author: typing.Union[discord.User, discord.Member], emoted: bool = True):

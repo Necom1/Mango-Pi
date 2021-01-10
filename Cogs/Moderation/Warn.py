@@ -96,13 +96,13 @@ class Warn(commands.Cog):
     async def warn(self, ctx: commands.Context, target: discord.Member, *, reason: str):
         """Warns a member and adds that to their warn list"""
         if target.bot:
-            return await ctx.send("Bots don't list to warnings...")
+            return await ctx.reply("Bots don't list to warnings...")
         if len(reason) <= 0:
-            return await ctx.send("Please specify a reason.")
+            return await ctx.reply("Please specify a reason.")
         if ctx.author.id == target.id:
-            return await ctx.send("Wait, what?")
+            return await ctx.reply("Wait, what?")
         if len(reason) > 400:
-            return await ctx.send("That is a very long warning reason... Try keep in under 400 letters...")
+            return await ctx.reply("That is a very long warning reason... Try keep in under 400 letters...")
 
         data = self.add_warn(ctx.message.created_at, ctx.guild.id, target.id, ctx.author.id, 0, reason)
 
@@ -115,7 +115,7 @@ class Warn(commands.Cog):
                               .set_author(icon_url=ctx.guild.icon_url_as(size=64), name=f"{ctx.guild.name}"))
             await ctx.message.add_reaction(emoji='👍')
         except discord.HTTPException:
-            await ctx.send("Warning stored in system, however, can not warn the target via DM.")
+            await ctx.reply("Warning stored in system, however, can not warn the target via DM.")
 
     @commands.guild_only()
     @commands.group(aliases=['wm'])
@@ -128,7 +128,7 @@ class Warn(commands.Cog):
                             value="Mode 'show' will list amount of warning the user have\nMode 'purge' will delete all"
                                   " the warnings the user have\nMode 'remove' will remove the specified warnings "
                                   "the user have by warn ID")
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
     @warn_menu.command()
     async def purge(self, ctx, target: typing.Union[discord.Member, discord.User, int]):
@@ -139,7 +139,7 @@ class Warn(commands.Cog):
             target = target.id
 
         self.db.delete_one({"guild_id": ctx.guild.id, "user_id": target})
-        await ctx.send(f"Purged warn data of user with ID:`{target}`")
+        await ctx.reply(f"Purged warn data of user with ID:`{target}`")
 
     @warn_menu.command(aliases=['-'])
     async def remove(self, ctx: commands.Context, target: typing.Union[discord.Member, discord.User, int], warn: int):
@@ -151,10 +151,10 @@ class Warn(commands.Cog):
 
         data = self.db.find_one({"guild_id": ctx.guild.id, "user_id": target})
         if data is None:
-            await ctx.send("There is no warning to delete")
+            await ctx.reply("There is no warning to delete")
         else:
             if warn not in data["warn_id"]:
-                await ctx.send("Can not find that warn_id")
+                await ctx.reply("Can not find that warn_id")
             else:
                 if len(data["warn_id"]) == 1:
                     self.db.delete_one({"guild_id": ctx.guild.id, "user_id": target})
@@ -177,10 +177,10 @@ class Warn(commands.Cog):
     async def show(self, ctx: commands.Context, target: typing.Union[discord.Member, discord.User, int], page: int = 1):
         """List all the warnings the user may have"""
         if page < 1:
-            return await ctx.send("Page number must be bigger than 0")
+            return await ctx.reply("Page number must be bigger than 0")
         data = self.db.find_one({"guild_id": ctx.guild.id, "user_id": target if isinstance(target, int) else target.id})
         if not data:
-            await ctx.send(f"**{target}** have a clean record")
+            await ctx.reply(f"**{target}** have a clean record")
         else:
             if isinstance(target, discord.Member):
                 embed = discord.Embed(
@@ -235,4 +235,4 @@ class Warn(commands.Cog):
 
             embed.set_footer(text=f"{page} / {max_page} Page")
 
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)

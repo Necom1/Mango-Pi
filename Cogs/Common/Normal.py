@@ -43,7 +43,7 @@ class Normal(commands.Cog):
 
         # Reference: https://stackoverflow.com/questions/46307035/ping-command-with-discord-py
         before = time.monotonic()
-        message = await ctx.send(":ping_pong:")
+        message = await ctx.reply(":ping_pong:")
         ping = int(round((time.monotonic() - before) * 1000))
         web = int(round(self.bot.latency * 1000))
         average = int(round((ping + web) / 2))
@@ -86,14 +86,14 @@ class Normal(commands.Cog):
         )
         embed.set_image(url=f"{link}")
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command()
     async def utc(self, ctx: commands.Context):
         """Return the current UTC time."""
         if self.bot.ignore_check(ctx):
             return
-        await ctx.send(datetime.datetime.utcnow().strftime("UTC Time:\n`%B %#d, %Y`\n%I:%M %p"))
+        await ctx.reply(datetime.datetime.utcnow().strftime("UTC Time:\n`%B %#d, %Y`\n%I:%M %p"))
 
     # get user info
     @commands.command(aliases=["userinfo", "uinfo"])
@@ -157,7 +157,7 @@ class Normal(commands.Cog):
             if member.bot:
                 embed.set_field_at(index=0, name="Bot", value=f"{member.mention}")
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command(aliases=["sBanner", "sbanner", "banner"])
     @commands.guild_only()
@@ -167,9 +167,9 @@ class Normal(commands.Cog):
             return
 
         if not ctx.guild.banner:
-            await ctx.send("This server don't have a banner 😢")
+            await ctx.reply("This server don't have a banner 😢")
         else:
-            await ctx.send(embed=discord.Embed(
+            await ctx.reply(embed=discord.Embed(
                 colour=0xecf0f1,
                 timestamp=ctx.message.created_at,
                 title=f"Server Banner for {ctx.guild}"
@@ -183,7 +183,7 @@ class Normal(commands.Cog):
         if self.bot.ignore_check(ctx):
             return
 
-        await ctx.send(embed=discord.Embed(
+        await ctx.reply(embed=discord.Embed(
             colour=0xecf0f1,
             title=f"Server Icon for {ctx.guild}",
             timestamp=ctx.message.created_at
@@ -198,9 +198,9 @@ class Normal(commands.Cog):
             return
 
         if ctx.guild.splash is None:
-            await ctx.send("This server don't have a invite splash screen 😢")
+            await ctx.reply("This server don't have a invite splash screen 😢")
         else:
-            await ctx.send(embed=discord.Embed(
+            await ctx.reply(embed=discord.Embed(
                 timestamp=ctx.message.created_at,
                 colour=0xecf0f1,
                 title=f"Invite Splash Screen for {ctx.guild}"
@@ -262,7 +262,7 @@ class Normal(commands.Cog):
 
         embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url_as(size=64))
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command(aliases=['ei'])
     async def emote_info(self, ctx: commands.Context):
@@ -270,7 +270,7 @@ class Normal(commands.Cog):
         if self.bot.ignore_check(ctx):
             return
 
-        message = await ctx.send("React to this message")
+        message = await ctx.reply("React to this message")
 
         def check(reaction1, user1):
             return reaction1.message.id == message.id and user1.id == ctx.author.id
@@ -294,7 +294,7 @@ class Normal(commands.Cog):
             return
         emotes = ctx.guild.emojis
         if len(emotes) <= 0:
-            await ctx.send("This server don't have any emotes.")
+            await ctx.reply("This server don't have any emotes.")
             return
         normal = []
         animated = []
@@ -326,7 +326,7 @@ class Normal(commands.Cog):
                     temp = ""
                     count += 1
             embed.add_field(name=f"Animated Emotes {count}", value=temp + " ")
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.command(aliases=["binfo"])
     async def info(self, ctx: commands.Context):
@@ -352,7 +352,7 @@ class Normal(commands.Cog):
 
         embed.set_footer(text="v 0.9 | Beta", icon_url="https://i.imgur.com/RPrw70n.jpg")
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
 
 def setup(bot: MangoPi):

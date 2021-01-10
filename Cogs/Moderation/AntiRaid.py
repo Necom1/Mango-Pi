@@ -106,7 +106,7 @@ class AntiRaid(commands.Cog):
         try:
             return self.data[ctx.guild.id]
         except KeyError:
-            return await ctx.send(f"This server have not setup an anti-raid yet. Do "
+            return await ctx.reply(f"This server have not setup an anti-raid yet. Do "
                                   f"`{ctx.prefix}ar create <raider role>` to set it up.")
 
     def database_update(self, data: RaidFilter):
@@ -171,7 +171,7 @@ class AntiRaid(commands.Cog):
             embed.add_field(inline=False, name=f"{pre}ar - <user mention or ID>",
                             value="Remove the target from the anti raid cell if they are in it.")
             embed.add_field(inline=False, name=f"{pre}ar s", value="Bring up anti raid setting menu")
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
     @anti_raid.command()
     async def clear(self, ctx: commands.Context, release: bool = False):
@@ -184,7 +184,7 @@ class AntiRaid(commands.Cog):
             else:
                 ret = await data.release_all()
                 for i in ret:
-                    await ctx.send(embed=discord.Embed(title="Free marked raiders",
+                    await ctx.reply(embed=discord.Embed(title="Free marked raiders",
                                                        colour=0x4cd137, description=i))
 
     @anti_raid.command()
@@ -204,7 +204,7 @@ class AntiRaid(commands.Cog):
             result = list(await data.ban_all(ctx, stop))
             await ctx.message.add_reaction(emoji='✅')
             for i in range(len(result)):
-                await ctx.send(
+                await ctx.reply(
                     embed=discord.Embed(title=f"All Banned Raiders {i + 1}", description=result[i], colour=0xff4757)
                 )
 
@@ -216,7 +216,7 @@ class AntiRaid(commands.Cog):
             result = list(await data.kick_all(stop))
             await ctx.message.add_reaction(emoji='✅')
             for i in range(len(result)):
-                await ctx.send(
+                await ctx.reply(
                     embed=discord.Embed(title=f"All Kicked Raiders {i + 1}", description=result[i], colour=0xff4757)
                 )
 
@@ -225,7 +225,7 @@ class AntiRaid(commands.Cog):
         """Create an anti-raid system for the server with the specified raider role."""
         data = self.db.find_one({"_id": ctx.guild.id})
         if data:
-            return await ctx.send("This server already have an anti-raid system, no need to create another one.")
+            return await ctx.reply("This server already have an anti-raid system, no need to create another one.")
         self.db.insert_one({"_id": ctx.guild.id, "interval": 5, "amount": 3, "power": True, "role_id": role.id,
                             "timeout": 60})
         self.update(ctx.guild.id)
@@ -237,7 +237,7 @@ class AntiRaid(commands.Cog):
         data = await self.verify(ctx)
         if isinstance(data, RaidFilter):
             if not data.switch:
-                return await ctx.send("Anti Raid system is not online")
+                return await ctx.reply("Anti Raid system is not online")
             embed = discord.Embed(
                 colour=0xe056fd,
                 title="AntiRaid Status " + ("⚠ RAID!" if data.raid else "🧘 Clear"),
@@ -256,7 +256,7 @@ class AntiRaid(commands.Cog):
                 if temp != '':
                     embed.add_field(name=f"Watch List {page}", value=temp)
 
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
     @anti_raid.command(aliases=['+'])
     async def mark(self, ctx: commands.Context, *target: discord.Member):
@@ -267,7 +267,7 @@ class AntiRaid(commands.Cog):
                 try:
                     await data.add(i)
                 except ValueError:
-                    await ctx.send(f"{i.mention} is already a marked raider")
+                    await ctx.reply(f"{i.mention} is already a marked raider")
             await ctx.message.add_reaction(emoji='👍')
 
     @anti_raid.command(aliases=['-'])
@@ -279,7 +279,7 @@ class AntiRaid(commands.Cog):
                 try:
                     await data.remove(i)
                 except ValueError:
-                    await ctx.send(f"Can not find {i.mention} within raider cell")
+                    await ctx.reply(f"Can not find {i.mention} within raider cell")
             await ctx.message.add_reaction(emoji='👍')
 
     @anti_raid.command(aliases=['s'])
@@ -303,7 +303,7 @@ class AntiRaid(commands.Cog):
                             f"📛 - Raider Role: " + (f"{de_role.mention}" if de_role else "**Error!!**") + "\n"
                             f"⏸ - Setting Menu Pause"
             ).set_footer(text="React to Modify", icon_url=self.bot.user.avatar_url_as(size=128))
-            msg = await ctx.send(embed=embed)
+            msg = await ctx.reply(embed=embed)
             for i in emotes:
                 await msg.add_reaction(emoji=i)
             try:

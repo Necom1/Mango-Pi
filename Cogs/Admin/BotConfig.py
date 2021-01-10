@@ -105,7 +105,7 @@ class BotConfig(commands.Cog):
             if len(channels) > 0:
                 embed.add_field(inline=False, name="Console Channels", value="\n".join(channels))
 
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
     @log_report.command(aliases=["+"])
     async def add(self, ctx: commands.Context, new: typing.Union[discord.User, discord.TextChannel] = None):
@@ -116,7 +116,7 @@ class BotConfig(commands.Cog):
         try:
             self.bot.data.add_console(new)
         except ValueError:
-            return await ctx.send(f"{new.mention} is already within the log report list")
+            return await ctx.reply(f"{new.mention} is already within the log report list")
 
         await ctx.message.add_reaction(emoji="✅")
 
@@ -131,7 +131,7 @@ class BotConfig(commands.Cog):
         try:
             self.bot.data.remove_console(exist)
         except ValueError:
-            return await ctx.send(f"{exist.mention} not found within the log report list")
+            return await ctx.reply(f"{exist.mention} not found within the log report list")
 
         await ctx.message.add_reaction(emoji="🗑️")
 
@@ -142,7 +142,7 @@ class BotConfig(commands.Cog):
         Group command for default status and activities, no sub-command will bring up bot status and activity menu.
         """
         if self.bot.data.rsa[0]:
-            return await ctx.send("Random Status and Activity is on, please turn it off before trying to modify "
+            return await ctx.reply("Random Status and Activity is on, please turn it off before trying to modify "
                                   "default bot status and activity")
 
         if not ctx.invoked_subcommand:
@@ -161,7 +161,7 @@ class BotConfig(commands.Cog):
 
             embed.add_field(inline=False, name="Status", value=f"{status_emote[data[0]]} - {data[0]}")
             embed.add_field(inline=False, name="Activity", value=f"{data[1]}ing **__{data[2]}__**")
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
     @status_activity.command(aliases=["s", "stat"])
     async def status(self, ctx: commands.Context, *, new: str):
@@ -177,7 +177,7 @@ class BotConfig(commands.Cog):
         elif new in ("invisible", "grey", "gray"):
             result = "invisible"
         else:
-            return await ctx.send("Unknown parameter inputted, try do it by color and know that this is space "
+            return await ctx.reply("Unknown parameter inputted, try do it by color and know that this is space "
                                   "sensitive")
 
         self.bot.data.status[0] = result
@@ -194,7 +194,7 @@ class BotConfig(commands.Cog):
         if new.endswith("ing"):
             new = new[:-3]
         if new not in ("play", "listen", "watch", "stream"):
-            return await ctx.send("Unknown input, please check activity type and try again")
+            return await ctx.reply("Unknown input, please check activity type and try again")
 
         self.bot.data.status[1] = new
         self.bot.data.settings_db_update("status")
@@ -234,7 +234,7 @@ class BotConfig(commands.Cog):
                 more = [f"> {i}" for i in self.bot.data.activities]
                 embed.add_field(inline=False, name="Activities", value="\n".join(more))
 
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
     @random_status_activity.command()
     async def toggle(self, ctx: commands.Context):
@@ -245,10 +245,10 @@ class BotConfig(commands.Cog):
         self.bot.data.settings_db_update("rsa")
         if self.bot.data.rsa[0]:
             self.bot.data.rsa_process.start()
-            await ctx.send("Random Status and Activity now **On**")
+            await ctx.reply("Random Status and Activity now **On**")
         else:
             self.bot.data.rsa_process.stop()
-            await ctx.send("Random Status and Activity is now **Off**")
+            await ctx.reply("Random Status and Activity is now **Off**")
         await self.bot.data.change_to_default_activity()
 
     @random_status_activity.command(aliases=["s"])
@@ -270,10 +270,10 @@ class BotConfig(commands.Cog):
     async def timer(self, ctx: commands.Context, seconds: int = 10):
         """Sub-command of rsa command, takes in integer input for the interval for the RSA system."""
         if seconds < 10:
-            return await ctx.send("Timer for RSA can't be less than 10 seconds")
+            return await ctx.reply("Timer for RSA can't be less than 10 seconds")
         self.bot.data.rsa[4] = seconds
         if self.bot.data.rsa[4] == seconds:
-            return await ctx.send("No changes has been made")
+            return await ctx.reply("No changes has been made")
         self.bot.data.settings_db_update("rsa")
         await ctx.message.add_reaction(emoji="✅")
 
@@ -281,7 +281,7 @@ class BotConfig(commands.Cog):
     async def add_activity(self, ctx: commands.Context, *, new: str):
         """Sub-command of rsa command, adds new activity into the RSA system."""
         if new in self.bot.data.activities:
-            return await ctx.send("That activity already exist within the RSA system")
+            return await ctx.reply("That activity already exist within the RSA system")
         self.bot.data.add_activity(new)
         await ctx.message.add_reaction(emoji="✅")
 
@@ -289,7 +289,7 @@ class BotConfig(commands.Cog):
     async def remove_activity(self, ctx: commands.Context, *, exist: str):
         """Sub-command of rsa command, remove existing activity from the RSA system."""
         if exist not in self.bot.data.activities:
-            return await ctx.send("That activity can not be found within the RSA system")
+            return await ctx.reply("That activity can not be found within the RSA system")
         self.bot.data.remove_activity(exist)
         await ctx.message.add_reaction(emoji="✅")
 
@@ -299,7 +299,7 @@ class BotConfig(commands.Cog):
         data = self.bot.data.activities
 
         if len(data) == 0:
-            await ctx.send("There is no stored activity")
+            await ctx.reply("There is no stored activity")
         else:
             mini = (page - 1) * 10
             maxi = page * 10
@@ -318,4 +318,4 @@ class BotConfig(commands.Cog):
             embed.set_footer(icon_url=self.bot.user.avatar_url_as(size=64),
                              text=f"{page} / {(len(data) % 10) + 1} Pages")
 
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)

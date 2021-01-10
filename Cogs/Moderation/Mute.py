@@ -303,9 +303,9 @@ class Mute(commands.Cog):
             try:
                 data = self.roles[ctx.guild.id]
             except KeyError:
-                await ctx.send("This server have not set up a mute role.")
+                await ctx.reply("This server have not set up a mute role.")
             else:
-                await ctx.send(embed=discord.Embed(
+                await ctx.reply(embed=discord.Embed(
                     title="Server Mute Role",
                     colour=0x22a6b3,
                     description=f"{data.mention}",
@@ -322,7 +322,7 @@ class Mute(commands.Cog):
             self.roles.update({ctx.guild.id: new})
         else:
             if old.id == new.id:
-                return await ctx.send("No changes made")
+                return await ctx.reply("No changes made")
             self.bot.mongo["mute_role"].update_one({"guild_id": ctx.guild.id}, {"$set": {"role_id": new.id}})
             self.roles[ctx.guild.id] = new
             try:
@@ -339,7 +339,7 @@ class Mute(commands.Cog):
                         except discord.HTTPException:
                             pass
 
-        await ctx.send(embed=discord.Embed(
+        await ctx.reply(embed=discord.Embed(
             title="Server Mute Role Updated",
             timestamp=ctx.message.created_at,
             colour=0xeccc68,
@@ -364,7 +364,7 @@ class Mute(commands.Cog):
             the error message replied back to the user
         """
         if isinstance(error, commands.BadArgument):
-            return await ctx.send(str(error))
+            return await ctx.reply(str(error))
 
     @commands.command()
     @commands.guild_only()
@@ -372,14 +372,14 @@ class Mute(commands.Cog):
     async def mute(self, ctx: commands.Context, target: discord.Member, time: str, *, reason: str = "Not specified"):
         """Mutes user for the specified duration"""
         if target.id == self.bot.user.id or target.id == ctx.author.id:
-            return await ctx.send("😅")
+            return await ctx.reply("😅")
         if len(reason) > 400:
-            return await ctx.send("Too long of a ban reason... Try keep it under 400 letters...")
+            return await ctx.reply("Too long of a ban reason... Try keep it under 400 letters...")
 
         try:
             time1 = time_converter(time, ctx.message.created_at)
         except ValueError as e:
-            return await ctx.send(str(e.args[0]))
+            return await ctx.reply(str(e.args[0]))
 
         try:
             self.timers[ctx.guild.id]
@@ -393,7 +393,7 @@ class Mute(commands.Cog):
                 self.roles.pop(ctx.guild.id)
                 raise KeyError()
         except KeyError:
-            return await ctx.send(f"Mute role not setup in the server. Please set it up with `{ctx.prefix}mr set "
+            return await ctx.reply(f"Mute role not setup in the server. Please set it up with `{ctx.prefix}mr set "
                                   f"<role mention or ID>")
 
         has_role = role in target.roles
@@ -403,13 +403,13 @@ class Mute(commands.Cog):
             data = self.timers[ctx.guild.id][target.id]
         except KeyError:
             if time.startswith("-") and not has_role:
-                return await ctx.send("User is not muted, unable to remove duration.")
+                return await ctx.reply("User is not muted, unable to remove duration.")
             if not has_role:
                 await target.add_roles(role, reason=f"Muted until {time_str} for: \n{reason}.")
             data = MuteTimer(self.bot, ctx.guild.id, target.id, time1, reason)
             self.timers[ctx.guild.id].update({target.id: data})
             self.mute_db.insert_one({"guild_id": ctx.guild.id, "user_id": target.id, "end": time1, "reason": reason})
-            await ctx.send(embed=discord.Embed(
+            await ctx.reply(embed=discord.Embed(
                 title="🔇 Muted",
                 timestamp=ctx.message.created_at,
                 colour=0x95afc0
@@ -421,18 +421,18 @@ class Mute(commands.Cog):
             try:
                 time1 = time_converter(time, original)
             except ValueError as e:
-                return await ctx.send(str(e.args[0]))
+                return await ctx.reply(str(e.args[0]))
             await data.terminate()
             try:
                 data = MuteTimer(self.bot, ctx.guild.id, target.id, time1, reason)
             except ValueError:
                 await target.remove_roles(role, reason=f"Mute removal after time recalculation")
-                return await ctx.send("User un-muted after time re-calculation")
+                return await ctx.reply("User un-muted after time re-calculation")
             self.timers[ctx.guild.id].update({target.id: data})
             self.mute_db.update({"guild_id": ctx.guild.id, "user_id": target.id}, {
                 "$set": {"end": time1, "reason": reason}
             })
-            await ctx.send(embed=discord.Embed(
+            await ctx.reply(embed=discord.Embed(
                 title="🔇 Mute Time Changed",
                 timestamp=ctx.message.created_at,
                 colour=0x95afc0
@@ -448,7 +448,7 @@ class Mute(commands.Cog):
         try:
             role = self.roles[ctx.guild.id]
         except KeyError:
-            return await ctx.send("Can not locate the mute role, please make sure your mute_role system is setup")
+            return await ctx.reply("Can not locate the mute role, please make sure your mute_role system is setup")
 
         has_role = role in target.roles
         if has_role:
@@ -458,9 +458,9 @@ class Mute(commands.Cog):
             data = self.timers[ctx.guild.id][target.id]
         except KeyError:
             if has_role:
-                return await ctx.send("Mute role removed, but user not detected with a mute timer")
+                return await ctx.reply("Mute role removed, but user not detected with a mute timer")
             else:
-                return await ctx.send("User currently don't have a mute role")
+                return await ctx.reply("User currently don't have a mute role")
         else:
             await data.terminate()
             await ctx.message.add_reaction(emoji='🔇')
@@ -471,14 +471,14 @@ class Mute(commands.Cog):
     async def mute_list(self, ctx: commands.Context, page: int = 1):
         """List the amount of mute timers within the server"""
         if page < 1:
-            return await ctx.send("Page number can not be less than 1")
+            return await ctx.reply("Page number can not be less than 1")
 
         try:
             data = list(self.timers[ctx.guild.id].values())
             if len(data) == 0:
                 raise KeyError("empty")
         except KeyError:
-            return await ctx.send("Mute list is empty")
+            return await ctx.reply("Mute list is empty")
 
         start, end, total = range_calculator(10, len(data), page)
 
@@ -492,4 +492,4 @@ class Mute(commands.Cog):
             embed.add_field(name=f"User ID: {data[i].member}",
                             value=f"<@!{data[i].member}>'s Mute Reason:\n{data[i].reason}", inline=False)
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)

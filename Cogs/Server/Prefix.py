@@ -83,14 +83,14 @@ class Prefix(commands.Cog):
                 data = None
 
             if data is None:
-                await ctx.send("The default **[]**")
+                await ctx.reply("The default **[]**")
             else:
-                await ctx.send(f"Prefix for this server is **{data}**")
+                await ctx.reply(f"Prefix for this server is **{data}**")
 
     @prefix.command()
     async def default(self, ctx: commands.Context):
         """Command that display bot default prefix."""
-        await ctx.send(f"My default prefix is: **{self.bot.default_prefix}**")
+        await ctx.reply(f"My default prefix is: **{self.bot.default_prefix}**")
 
     @prefix.command()
     @commands.has_permissions(manage_channels=True)
@@ -106,24 +106,24 @@ class Prefix(commands.Cog):
             # resetting prefix to bot default
             if not data:
                 # if no server prefix setting
-                await ctx.send("🤷 Nothing has changed.")
+                await ctx.reply("🤷 Nothing has changed.")
             else:
                 # resetting current prefix back to default
                 self.db.delete_one({"_id": ctx.guild.id})
                 self.prefix.pop(ctx.guild.id)
-                await ctx.send(f"Server prefix have been reset to: **{self.bot.default_prefix}**.")
+                await ctx.reply(f"Server prefix have been reset to: **{self.bot.default_prefix}**.")
             return
 
         if not data:
             # inserts the new prefix setting over the default
             self.db.insert_one({"_id": ctx.guild.id, "prefix": pre})
             self.prefix.update({ctx.guild.id: pre})
-            await ctx.send(f"Server prefix have been set to: **{pre}**.")
+            await ctx.reply(f"Server prefix have been set to: **{pre}**.")
         else:
             # changing the current prefix setting
             self.db.update_one({"_id": ctx.guild.id}, {"$set": {"prefix": pre}})
             self.prefix[ctx.guild.id] = pre
-            await ctx.send(f"Server prefix have been updated to: **{pre}**.")
+            await ctx.reply(f"Server prefix have been updated to: **{pre}**.")
 
 
 def setup(bot: MangoPi):

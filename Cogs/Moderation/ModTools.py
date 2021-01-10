@@ -58,7 +58,7 @@ class ModTools(commands.Cog):
 
         # reference: https://github.com/AlexFlipnote/discord_bot.py/blob/master/cogs/mod.py
         if amount > 500:
-            return await ctx.send("Please try to keep amount of messages to delete under 500, action cancelled.")
+            return await ctx.reply("Please try to keep amount of messages to delete under 500, action cancelled.")
 
         special = " "
         check = None
@@ -73,7 +73,7 @@ class ModTools(commands.Cog):
             target = target.lower()
             if target not in ('embed', 'mention', 'attachments', 'attach', 'attachment', 'mentions', 'embeds',
                               'contain', 'contains', 'have', 'image', 'images', 'video', 'media'):
-                return await ctx.send("Unknown operation, please check your input")
+                return await ctx.reply("Unknown operation, please check your input")
 
             if target in ('embed', 'embeds'):
                 def thing(m):
@@ -92,7 +92,7 @@ class ModTools(commands.Cog):
                 special = ' **with mentions** '
             elif target in ('contain', 'contains', 'have'):
                 if not word:
-                    return await ctx.send("Please remember to input words to scan for after the operation")
+                    return await ctx.reply("Please remember to input words to scan for after the operation")
                 else:
                     def thing(m):
                         return word.lower() in m.content.lower()
@@ -136,7 +136,7 @@ class ModTools(commands.Cog):
             timestamp=ctx.message.created_at
         )
         embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url_as(size=64))
-        await ctx.send(embed=embed, delete_after=8)
+        await ctx.reply(embed=embed, delete_after=8)
 
     # if an error occurs when using clear command
     @clear.error
@@ -158,9 +158,9 @@ class ModTools(commands.Cog):
         """
         nope = self.bot.ignore_check(ctx)
         if isinstance(error, commands.MissingRequiredArgument):
-            return await ctx.send("Please specify the amount to delete.", delete_after=10)
+            return await ctx.reply("Please specify the amount to delete.", delete_after=10)
         elif isinstance(error, commands.BadArgument):
-            return await ctx.send("Please enter a whole number!", delete_after=10)
+            return await ctx.reply("Please enter a whole number!", delete_after=10)
         elif isinstance(error, commands.MissingPermissions):
             if nope or ctx.channel.type == discord.ChannelType.private:
                 return
@@ -169,7 +169,7 @@ class ModTools(commands.Cog):
                 description='You will need the permission of [Manage Messages] to use this command.'
             )
             embed.set_footer(text=f"Input by {ctx.author}", icon_url=ctx.author.avatar_url)
-            return await ctx.send(embed=embed, delete_after=10)
+            return await ctx.reply(embed=embed, delete_after=10)
         elif isinstance(error, discord.Forbidden):
             if nope:
                 return
@@ -178,9 +178,9 @@ class ModTools(commands.Cog):
                 description="I don't have the permission required to perform prune. To do this, I will need: "
                             "**Manage Messages** permission."
             )
-            return await ctx.send(embed=embed, delete_after=10)
+            return await ctx.reply(embed=embed, delete_after=10)
         else:
-            await ctx.send("Unknown error has occurred, please try again later.", delete_after=10)
+            await ctx.reply("Unknown error has occurred, please try again later.", delete_after=10)
 
     @commands.command(aliases=['ra'])
     @commands.guild_only()
@@ -188,14 +188,14 @@ class ModTools(commands.Cog):
     async def role_all(self, ctx: commands.Context, *gives: discord.Role):
         """Gives all member in the server the specified roles, 1 hour cooldown after use."""
         if ctx.guild.id in self.role:
-            return await ctx.send("Command on cooldown(1hr), please try again later.")
+            return await ctx.reply("Command on cooldown(1hr), please try again later.")
         if len(gives) <= 0:
-            return await ctx.send("Please specify the roles to give")
+            return await ctx.reply("Please specify the roles to give")
         self.role.append(ctx.guild.id)
         people = ctx.guild.members
         size = len(people)
 
-        message = await ctx.send("Processing")
+        message = await ctx.reply("Processing")
 
         count = 0
         for i in people:
@@ -209,7 +209,7 @@ class ModTools(commands.Cog):
                 try:
                     await i.add_roles(*gives, reason=f"Add roles to all request by {ctx.author.name}")
                 except discord.HTTPException:
-                    await ctx.send(f"Failed to add roles to **{i}** (ID: {i.id})")
+                    await ctx.reply(f"Failed to add roles to **{i}** (ID: {i.id})")
 
                 if count % 10 == 0:
                     await message.edit(content=f"Progress: {count}/{size} added")
@@ -224,14 +224,14 @@ class ModTools(commands.Cog):
     async def unrole_all(self, ctx: commands.Context, *removes: discord.Role):
         """Remove specific roles from all members of the server, 1 hour cooldown after use."""
         if ctx.guild.id in self.role:
-            return await ctx.send("Command on cooldown(1hr), please try again later.")
+            return await ctx.reply("Command on cooldown(1hr), please try again later.")
         if len(removes) <= 0:
-            return await ctx.send("Please specify the roles to remove")
+            return await ctx.reply("Please specify the roles to remove")
         self.role.append(ctx.guild.id)
         people = ctx.guild.members
         size = len(people)
 
-        message = await ctx.send("Processing")
+        message = await ctx.reply("Processing")
 
         count = 0
 
@@ -245,7 +245,7 @@ class ModTools(commands.Cog):
                 try:
                     await i.remove_roles(*removes, reason=f"Remove roles to all request by {ctx.author.name}")
                 except discord.HTTPException:
-                    await ctx.send(f"Failed to remove roles from **{i.name}** (ID: {i.id})")
+                    await ctx.reply(f"Failed to remove roles from **{i.name}** (ID: {i.id})")
 
                 if count % 10 == 0:
                     await message.edit(content=f"Progress: {count}/{size} removed")
@@ -260,12 +260,12 @@ class ModTools(commands.Cog):
     async def download_emote(self, ctx: commands.Context):
         """Wraps all the emotes within the server into a zipfile and upload it, 1 hour cooldown after use."""
         if ctx.guild.id in self.instance:
-            return await ctx.send("This command is already running...")
+            return await ctx.reply("This command is already running...")
         if ctx.guild.id in self.cooling:
-            return await ctx.send("This command is on cooldown(1hr), please try again later.")
+            return await ctx.reply("This command is on cooldown(1hr), please try again later.")
         emotes = ctx.guild.emojis
         if len(emotes) <= 0:
-            return await ctx.send("There is no emotes in this server")
+            return await ctx.reply("There is no emotes in this server")
         self.instance.append(ctx.guild.id)
         # references:
         # https://stackabuse.com/creating-and-deleting-directories-with-python/
@@ -275,9 +275,9 @@ class ModTools(commands.Cog):
             os.makedirs(f"tmp/{ctx.guild.id}/animated")
             os.makedirs(f"tmp/{ctx.guild.id}/normal")
         except OSError:
-            return await ctx.send("Error happened on line 278 of **ModTools.py**, please report this to Necomi#1555")
+            return await ctx.reply("Error happened on line 278 of **ModTools.py**, please report this to Necomi#1555")
 
-        message = await ctx.send("Downloading emotes right now, going to take a while.")
+        message = await ctx.reply("Downloading emotes right now, going to take a while.")
 
         size = len(emotes)
 
@@ -301,7 +301,7 @@ class ModTools(commands.Cog):
 
         zipf.close()
         await message.edit(content="File zipped, uploading...")
-        await ctx.send(content=f"All the emotes for {ctx.guild.name}", file=discord.File(name))
+        await ctx.reply(content=f"All the emotes for {ctx.guild.name}", file=discord.File(name))
         shutil.rmtree(f"tmp/{ctx.guild.id}/")
         await message.delete()
         os.remove(name)

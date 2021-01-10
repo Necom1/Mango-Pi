@@ -108,7 +108,7 @@ class Ignore(commands.Cog):
         display = "I take commands from all channels"
 
         if len(data) <= 0:
-            return await ctx.send(display)
+            return await ctx.reply(display)
         else:
             display = ""
             for i in data:
@@ -126,9 +126,9 @@ class Ignore(commands.Cog):
             ).set_thumbnail(url=ctx.guild.icon_url)
 
             if len(display) <= 0:
-                await ctx.send("I take commands from all channels")
+                await ctx.reply("I take commands from all channels")
             else:
-                await ctx.send(embed=embed)
+                await ctx.reply(embed=embed)
 
     @commands.command()
     @commands.guild_only()
@@ -140,10 +140,10 @@ class Ignore(commands.Cog):
 
         if not data:
             self.db.insert_one({"guild_id": ctx.guild.id, "_id": channel.id})
-            await ctx.send(f"{channel} has been added to ignore commands list.", delete_after=5)
+            await ctx.reply(f"{channel} has been added to ignore commands list.", delete_after=5)
         else:
             self.db.delete_one({"guild_id": ctx.guild.id, "_id": channel.id})
-            await ctx.send(f"{channel} has been removed from ignore commands list.", delete_after=5)
+            await ctx.reply(f"{channel} has been removed from ignore commands list.", delete_after=5)
         self.update(ctx.guild.id)
 
 

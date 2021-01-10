@@ -315,16 +315,16 @@ class Scanner(commands.Cog):
             embed.add_field(inline=False, name=f"{pre}s change (new nickname)",
                             value="Change the nickname to change on scanner trigger")
 
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
     @scanner.command(aliases=["c"])
     async def create(self, ctx: commands.Context, *, name: str):
         """Create a new scanner with the specified name."""
         data = self.find(ctx.guild.id, name)
         if len(name) > 51:
-            return await ctx.send("Scanner name is too long, try keep it under or equal to 50 characters.")
+            return await ctx.reply("Scanner name is too long, try keep it under or equal to 50 characters.")
         if data:
-            return await ctx.send("Scanner with the same name already exist")
+            return await ctx.reply("Scanner with the same name already exist")
         else:
             self.s_db.insert_one({"guild": ctx.guild.id, "name": name, "delete": True, "warn": False, "active": False,
                                   "words": [], "channels": [], "users": [], "roles": []})
@@ -336,7 +336,7 @@ class Scanner(commands.Cog):
         """Open scanner setting menu."""
         data = self.find(ctx.guild.id, name)
         if not data:
-            return await ctx.send("Can not find the specified scanner")
+            return await ctx.reply("Can not find the specified scanner")
 
         embed = discord.Embed(
             colour=0x55efc4 if data.active else 0xff6b81,
@@ -352,7 +352,7 @@ class Scanner(commands.Cog):
         embed.add_field(name="Options", inline=False,
                         value="💡 - Toggle on/off scanner\n🗑 - Toggle on/off auto-delete\n"
                               "👮 - Toggle on/off auto warn\n💥 - Delete the scanner\n⏸ - Freeze the setting menu")
-        message = await ctx.send(embed=embed)
+        message = await ctx.reply(embed=embed)
         for i in self.options:
             await message.add_reaction(emoji=i)
 
@@ -417,31 +417,31 @@ class Scanner(commands.Cog):
         """Add the specified phrase or word into the scanner"""
         data = self.find(ctx.guild.id, name)
         if not data:
-            return await ctx.send("Can not find the specified Scanner")
+            return await ctx.reply("Can not find the specified Scanner")
 
         word = word.lower()
         if word in data:
-            return await ctx.send(f"**{word}** is already inside the Scanner")
+            return await ctx.reply(f"**{word}** is already inside the Scanner")
 
         data.words.append(word)
         data.words.sort()
         self.s_db.update_one({"guild": ctx.guild.id, "name": name}, {"$push": {"words": word}})
-        await ctx.send(f"**{word}** has been added into scanner `{name}`")
+        await ctx.reply(f"**{word}** has been added into scanner `{name}`")
 
     @scanner.command(aliases=["-"])
     async def remove(self, ctx: commands.Context, name: str, *, word: str):
         """Attempt to remove the specified word from the scanner."""
         data = self.find(ctx.guild.id, name)
         if not data:
-            return await ctx.send("Can not find the specified scanner")
+            return await ctx.reply("Can not find the specified scanner")
 
         word = word.lower()
         if word not in data:
-            return await ctx.send(f"**{word}** can not be found in the `{name}` Scanner")
+            return await ctx.reply(f"**{word}** can not be found in the `{name}` Scanner")
 
         data.words.remove(word)
         self.s_db.update_one({"guild": ctx.guild.id, "name": name}, {"$pull": {"words": word}})
-        await ctx.send(f"**{word}** has been removed from `{name}`")
+        await ctx.reply(f"**{word}** has been removed from `{name}`")
 
     @scanner.command(aliases=["++"])
     async def multiple_add(self, ctx: commands.Context, name: str, *words: str):
@@ -449,9 +449,9 @@ class Scanner(commands.Cog):
         data = self.find(ctx.guild.id, name)
 
         if len(words) < 1:
-            return await ctx.send("Please specified the words or phrases to add into the scanner")
+            return await ctx.reply("Please specified the words or phrases to add into the scanner")
         if not data:
-            return await ctx.send("Can not find the specified scanner")
+            return await ctx.reply("Can not find the specified scanner")
 
         success = []
         fail = []
@@ -482,7 +482,7 @@ class Scanner(commands.Cog):
                             value=f"**{len(fail)}** words as they already within that scanner:\n\n{temp}")
 
         if reply.fields is not discord.Embed.Empty:
-            await ctx.send(embed=reply)
+            await ctx.reply(embed=reply)
 
     @scanner.command(aliases=["--"])
     async def multiple_remove(self, ctx: commands.Context, name: str, *words: str):
@@ -490,9 +490,9 @@ class Scanner(commands.Cog):
         data = self.find(ctx.guild.id, name)
 
         if len(words) < 1:
-            return await ctx.send("Please specified the words or phrases to add into the scanner")
+            return await ctx.reply("Please specified the words or phrases to add into the scanner")
         if not data:
-            return await ctx.send("Can not find the specified scanner")
+            return await ctx.reply("Can not find the specified scanner")
 
         success = []
         fail = []
@@ -521,7 +521,7 @@ class Scanner(commands.Cog):
                             value=f"**{len(fail)}** words as they can't be found within that scanner:\n\n{temp}")
 
         if reply.fields is not discord.Embed.Empty:
-            await ctx.send(embed=reply)
+            await ctx.reply(embed=reply)
 
     @scanner.command(aliases=["l"])
     async def list(self, ctx: commands.Context, name: str = None, page: int = 1):
@@ -530,9 +530,9 @@ class Scanner(commands.Cog):
             try:
                 array = self.data[ctx.guild.id]
             except KeyError:
-                return await ctx.send("No scanner founded within this server")
+                return await ctx.reply("No scanner founded within this server")
             if len(array) < 1:
-                return await ctx.send("No scanner founded within this server")
+                return await ctx.reply("No scanner founded within this server")
             total = ""
             for i in array.values():
                 temp = ""
@@ -540,17 +540,17 @@ class Scanner(commands.Cog):
                 temp += "🗑" if i.delete else "📖"
                 temp += "👮" if i.warn else "😴"
                 total += f"{temp} **{i.name}**\n"
-            await ctx.send(embed=discord.Embed(
+            await ctx.reply(embed=discord.Embed(
                 title="Server Scanners",
                 description=total,
                 colour=0x81ecec
             ))
         else:
             if page < 1:
-                return await ctx.send("Page can't be less than 1")
+                return await ctx.reply("Page can't be less than 1")
             data = self.find(ctx.guild.id, name)
             if not data:
-                return await ctx.send("Can not find the specified scanner")
+                return await ctx.reply("Can not find the specified scanner")
 
             info = ""
             start, end, total = range_calculator(30, len(data.words), page)
@@ -571,18 +571,18 @@ class Scanner(commands.Cog):
             if len(data.words) > 0:
                 embed.set_footer(text=f"Page {page} / {total}")
 
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
     @scanner.command(aliases=["i"])
     async def ignore(self, ctx: commands.Context, name: str,
                      *targets: typing.Union[discord.Member, discord.TextChannel, discord.Role, int]):
         """Ignore/un-ignore the specified targets be it either IDs, channel, member, or role mention"""
         if len(targets) < 1:
-            return await ctx.send("Please specify the targets to ignore")
+            return await ctx.reply("Please specify the targets to ignore")
 
         data = self.find(ctx.guild.id, name)
         if not data:
-            return await ctx.send("Can not find the specified scanner")
+            return await ctx.reply("Can not find the specified scanner")
 
         ignore = []
         undo = []
@@ -640,17 +640,17 @@ class Scanner(commands.Cog):
         if update:
             self.s_db.update_one({"guild": ctx.guild.id, "name": name},
                                  {"$set": {"roles": data.roles, "channels": data.channels, "users": data.users}})
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @scanner.command(aliases=["il"])
     async def ignore_list(self, ctx: commands.Context, name: str, page: int = 1):
         """List all the ignore information within the scanner"""
         if page < 1:
-            return await ctx.send("Pages can't be less than 1")
+            return await ctx.reply("Pages can't be less than 1")
 
         data = self.find(ctx.guild.id, name)
         if not data:
-            return await ctx.send("Can not find the specified scanner")
+            return await ctx.reply("Can not find the specified scanner")
 
         embed = discord.Embed(
             timestamp=ctx.message.created_at,
@@ -685,7 +685,7 @@ class Scanner(commands.Cog):
                 embedding("Channels", data.channels, embed)
             if len(err) > 0:
                 embed.add_field(inline=False, name="Errors", value="\n".join(err))
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     async def port_menu(self, ctx: commands.Context, title: str, modify: Detector, reference: Detector):
         """
@@ -713,7 +713,7 @@ class Scanner(commands.Cog):
             colour=0x78e08f,
             description="📝 - Word List\n👥 - Users\n💬 - Channels\n📛 - Roles"
         )
-        message = await ctx.send(embed=embed)
+        message = await ctx.reply(embed=embed)
         for i in self.ports:
             await message.add_reaction(emoji=i)
 
@@ -757,9 +757,9 @@ class Scanner(commands.Cog):
         modify = self.find(ctx.guild.id, target)
         reference = self.find(ctx.guild.id, subject)
         if not modify:
-            return await ctx.send("Can not find the Scanner to modify")
+            return await ctx.reply("Can not find the Scanner to modify")
         if not reference:
-            return await ctx.send("Can not find the reference Scanner")
+            return await ctx.reply("Can not find the reference Scanner")
 
         try:
             message, modified, reference, mode = await \
@@ -795,9 +795,9 @@ class Scanner(commands.Cog):
         modify = self.find(ctx.guild.id, target)
         reference = self.find(ctx.guild.id, subject)
         if not modify:
-            return await ctx.send("Can not find the Scanner to modify")
+            return await ctx.reply("Can not find the Scanner to modify")
         if not reference:
-            return await ctx.send("Can not find the reference Scanner")
+            return await ctx.reply("Can not find the reference Scanner")
 
         try:
             message, modified, reference, mode = await \
@@ -835,7 +835,7 @@ class Scanner(commands.Cog):
             data = self.names[ctx.guild.id]
         except KeyError:
             data = self.default
-        await ctx.send(data)
+        await ctx.reply(data)
 
     @scanner.command()
     async def change(self, ctx: commands.Context, *, nickname: str = None):
@@ -844,12 +844,12 @@ class Scanner(commands.Cog):
             data = self.names[ctx.guild.id]
         except KeyError:
             if nickname == self.default:
-                return await ctx.send("Nothing has changed")
+                return await ctx.reply("Nothing has changed")
             self.n_db.insert_one({"_id": ctx.guild.id, "name": nickname})
             self.names.update({ctx.guild.id: nickname})
         else:
             if data == nickname:
-                return await ctx.send("Nothing has changed")
+                return await ctx.reply("Nothing has changed")
             data = nickname
             self.n_db.update({"_id": ctx.guild.id}, {"$set": {"name": data}})
         await ctx.message.add_reaction(emoji="👍")

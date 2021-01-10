@@ -91,14 +91,14 @@ class Reminder(commands.Cog):
         if self.bot.ignore_check(ctx):
             return
         if len(remind) == 0:
-            return await ctx.send("Please input remind detail.")
+            return await ctx.reply("Please input remind detail.")
         if len(remind) > 500:
-            return await ctx.send("Too long of a reminder... Try keep it under 500 words...")
+            return await ctx.reply("Too long of a reminder... Try keep it under 500 words...")
 
         try:
             end = time_converter(time, ctx.message.created_at)
         except ValueError as e:
-            return await ctx.send(str(e.args[0]))
+            return await ctx.reply(str(e.args[0]))
 
         try:
             self.memory[ctx.author.id]
@@ -106,7 +106,7 @@ class Reminder(commands.Cog):
             self.memory.update({ctx.author.id: {}})
         data = self.memory[ctx.author.id]
         if len(data) >= 10:
-            return await ctx.send("Max 10 reminder~")
+            return await ctx.reply("Max 10 reminder~")
         insert = RemindTimer(self.bot, ctx.message.id, end, remind, ctx.author.id)
         data.update({ctx.message.id: insert})
         self.db.insert_one({"_id": ctx.message.id, "user_id": ctx.author.id, "details": remind, "end": end})
@@ -121,9 +121,9 @@ class Reminder(commands.Cog):
             try:
                 data = self.memory[ctx.author.id]
             except KeyError:
-                return await ctx.send("No reminder in place!")
+                return await ctx.reply("No reminder in place!")
             if len(data) == 0:
-                return await ctx.send("No reminder in place!")
+                return await ctx.reply("No reminder in place!")
             counter = 1
             embed = discord.Embed(
                 title="Upcoming Reminders",
@@ -134,7 +134,7 @@ class Reminder(commands.Cog):
                 embed.add_field(inline=False,
                                 name=f"Reminder {counter} - ID: __{i}__",
                                 value=f"{data[i].end.strftime('%B %#d, %Y | `%I:%M %p` UTC')}\n**{data[i].details}**")
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
     @reminder.command(aliases=['-'])
     async def remove(self, ctx: commands.Context, reminder_id: int):
@@ -144,6 +144,6 @@ class Reminder(commands.Cog):
         try:
             data = self.memory[ctx.author.id][reminder_id]
         except KeyError:
-            return await ctx.send("Can not find the reminder")
+            return await ctx.reply("Can not find the reminder")
         await data.terminate()
         await ctx.message.add_reaction(emoji='👌')

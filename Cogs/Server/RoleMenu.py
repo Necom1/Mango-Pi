@@ -150,7 +150,7 @@ class RoleMenu(commands.Cog):
             embed.add_field(inline=False, name=f"{pre}rm clear <menu name>",
                             value="Clear all the reactions on the target message for that mentioned menu")
 
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
     @role_menu.command(aliases=['l'])
     async def list(self, ctx: commands.Context, *, name: str = None):
@@ -160,7 +160,7 @@ class RoleMenu(commands.Cog):
             try:
                 data = self.label[ctx.guild.id]
             except KeyError:
-                return await ctx.send("This server don't have any role menus 😔")
+                return await ctx.reply("This server don't have any role menus 😔")
             else:
                 for i in data.keys():
                     temp += f"|> **{i}**\n"
@@ -169,7 +169,7 @@ class RoleMenu(commands.Cog):
         else:
             data = self.search(ctx.guild.id, name)
             if not isinstance(data, RoleSelector):
-                return await ctx.send(f"Can not find the role menu named **{name}**")
+                return await ctx.reply(f"Can not find the role menu named **{name}**")
             temp = str(data)
             size = len(data)
             c = 0x55efc4 if data.active else 0xd63031
@@ -189,19 +189,19 @@ class RoleMenu(commands.Cog):
                 note += f"{k} | <@&{i}> ({i})\n"
             embed.add_field(name="Error Role(s):", value=note, inline=False)
 
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @role_menu.command(aliases=['c'])
     async def create(self, ctx: commands.Context, *, name: str):
         """Attempt to create a new role menu."""
         if len(name) > 51:
-            return await ctx.send("name of the role menu is too long ,try keep it under or equal to 50 characters")
+            return await ctx.reply("name of the role menu is too long ,try keep it under or equal to 50 characters")
         try:
             self.label[ctx.guild.id][name]
         except KeyError:
             pass
         else:
-            return await ctx.send(f"Role menu with the name **{name}** already exists.")
+            return await ctx.reply(f"Role menu with the name **{name}** already exists.")
         self.db.insert_one(
             {"guild_id": ctx.guild.id, "name": name, "active": False, "custom": [], "emote": [], "role_id": [],
              "message_id": ctx.message.id, "channel_id": ctx.channel.id, "multi": True}
@@ -214,16 +214,16 @@ class RoleMenu(commands.Cog):
         """Add role into the specified role menu, if successful, a reaction message will follow for the emote"""
         ret = self.search(ctx.guild.id, name)
         if not isinstance(ret, RoleSelector):
-            return await ctx.send(f"Role menu **{name}** don't exists, please create it first.")
+            return await ctx.reply(f"Role menu **{name}** don't exists, please create it first.")
         if role in ret:
-            return await ctx.send(f"`{role}` already exists within **{name}**")
+            return await ctx.reply(f"`{role}` already exists within **{name}**")
         if len(ret) > 19:
-            return await ctx.send(f"**{name}** menu have reached the max amount of roles")
+            return await ctx.reply(f"**{name}** menu have reached the max amount of roles")
 
         def check(reaction1: discord.Reaction, user1: discord.User):
             return (reaction1.message.id == message.id) and (user1.id == ctx.author.id)
 
-        message = await ctx.send(f"React with the emote you want `{role}` to be")
+        message = await ctx.reply(f"React with the emote you want `{role}` to be")
         custom = False
 
         try:
@@ -255,7 +255,7 @@ class RoleMenu(commands.Cog):
         await message.clear_reactions()
 
         if not isinstance(ret, RoleSelector):
-            return await ctx.send(f"**{name}** role menu does not exists, please create it first with the create "
+            return await ctx.reply(f"**{name}** role menu does not exists, please create it first with the create "
                                   f"command.")
         mes += f"{hold} >> `{role}` >> **{name}**"
         data = self.db.find_one({"guild_id": ctx.guild.id, "name": name})
@@ -278,15 +278,15 @@ class RoleMenu(commands.Cog):
         """Remove the specified role or emote from the role menu and it's associates"""
         ret = self.search(ctx.guild.id, name)
         if not isinstance(ret, RoleSelector):
-            return await ctx.send(f"Can not find role menu with the name **{name}**")
+            return await ctx.reply(f"Can not find role menu with the name **{name}**")
         data = self.db.find_one({"guild_id": ctx.guild.id, "name": name})
         if isinstance(target, discord.Role):
             if target not in ret:
-                return await ctx.send(f"Can not find `{target}` within **{name}**")
+                return await ctx.reply(f"Can not find `{target}` within **{name}**")
             num = data['role_id'].index(target.id)
         else:
             if target not in ret:
-                return await ctx.send(f"Can not find {target} within **{name}**")
+                return await ctx.reply(f"Can not find {target} within **{name}**")
             temp = target.id if isinstance(target, discord.Emoji) else target
             num = data['emote'].index(str(temp))
 
@@ -307,7 +307,7 @@ class RoleMenu(commands.Cog):
         """Attempt to auto resolve any issue within the specified role menu"""
         find = self.search(ctx.guild.id, name)
         if not isinstance(find, RoleSelector):
-            return await ctx.send(f"Can not find role menu named **{name}**")
+            return await ctx.reply(f"Can not find role menu named **{name}**")
         data = self.db.find_one({"guild_id": ctx.guild.id, "name": name})
         if not data:
             return await ctx.message.add_reaction(emoji='❌')
@@ -323,7 +323,7 @@ class RoleMenu(commands.Cog):
             self.update(ctx.guild.id)
             await ctx.message.add_reaction(emoji='✔')
         else:
-            await ctx.send(f"**{name}** contains no errors.")
+            await ctx.reply(f"**{name}** contains no errors.")
 
     @role_menu.command(aliases=['p'])
     async def purge(self, ctx: commands.Context, *, name):
@@ -335,9 +335,9 @@ class RoleMenu(commands.Cog):
         data = self.search(ctx.guild.id, name)
 
         if not isinstance(data, RoleSelector):
-            await ctx.send(f"**{name}** role menu does not exist")
+            await ctx.reply(f"**{name}** role menu does not exist")
         else:
-            message = await ctx.send(f"You sure you want to delete role menu: **{name}**?")
+            message = await ctx.reply(f"You sure you want to delete role menu: **{name}**?")
             for i in ['✅', '❌']:
                 await message.add_reaction(emoji=i)
 
@@ -360,7 +360,7 @@ class RoleMenu(commands.Cog):
         """Set the target message for the specified role menu"""
         find = self.search(ctx.guild.id, name)
         if not isinstance(find, RoleSelector):
-            return await ctx.send(f"Can not find role menu with the name **{name}**")
+            return await ctx.reply(f"Can not find role menu with the name **{name}**")
         chan = ctx.channel if not chan else chan
         fail = False
         if not chan:
@@ -370,12 +370,12 @@ class RoleMenu(commands.Cog):
             if not mes:
                 fail = True
         if fail:
-            return await ctx.send("Can not find the target message")
+            return await ctx.reply("Can not find the target message")
         if chan.id == find.channel_id and mes.id == find.message_id:
-            return await ctx.send(f"Received same input as one stored in system, no changes made.")
+            return await ctx.reply(f"Received same input as one stored in system, no changes made.")
         try:
             if mes.id in self.label[ctx.guild.id].values():
-                return await ctx.send("The target message is current in use by another role menu, action cancelled")
+                return await ctx.reply("The target message is current in use by another role menu, action cancelled")
         except KeyError:
             pass
         self.db.update_one({"guild_id": ctx.guild.id, "name": name}, {"$set": {
@@ -389,12 +389,12 @@ class RoleMenu(commands.Cog):
         """Toggle the specified role menu on/off"""
         data = self.search(ctx.guild.id, name)
         if not isinstance(data, RoleSelector):
-            return await ctx.send(f"Can not find role menu named **{name}**")
+            return await ctx.reply(f"Can not find role menu named **{name}**")
         if len(data) < 1:
-            return await ctx.send(f"Role menu **{name}** does not contain any item, toggle failed.")
+            return await ctx.reply(f"Role menu **{name}** does not contain any item, toggle failed.")
         if not data.message:
             data.active = False
-            await ctx.send(f"Can not locate the target message for role menu **{name}**, toggle failed")
+            await ctx.reply(f"Can not locate the target message for role menu **{name}**, toggle failed")
         else:
             data.active = not data.active
             await ctx.message.add_reaction(emoji='✅')
@@ -407,7 +407,7 @@ class RoleMenu(commands.Cog):
         """Toggle the mode of the specified role menu between single or multiple"""
         data = self.search(ctx.guild.id, name)
         if not isinstance(data, RoleSelector):
-            return await ctx.send(f"Can not find role menu named **{name}**")
+            return await ctx.reply(f"Can not find role menu named **{name}**")
         data.multiple = not data.multiple
         self.db.update_one({"guild_id": ctx.guild.id, "name": name}, {"$set": {
             "multi": data.multiple
@@ -419,7 +419,7 @@ class RoleMenu(commands.Cog):
         """Populate the target message with reactions of the specified role menu"""
         data = self.search(ctx.guild.id, name)
         if not isinstance(data, RoleSelector):
-            return await ctx.send("Can not locate that role menu")
+            return await ctx.reply("Can not locate that role menu")
         for i in data.emote_to_role.keys():
             await data.message.add_reaction(emoji=i)
         await ctx.message.add_reaction(emoji='✅')
@@ -429,7 +429,7 @@ class RoleMenu(commands.Cog):
         """Clear the reaction of the target message of the specified role menu"""
         data = self.search(ctx.guild.id, name)
         if not isinstance(data, RoleSelector):
-            return await ctx.send(f"Can not find role menu named **{name}**")
+            return await ctx.reply(f"Can not find role menu named **{name}**")
         await data.message.clear_reactions()
         await ctx.message.add_reaction(emoji='✅')
 
