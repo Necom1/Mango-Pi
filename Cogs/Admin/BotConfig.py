@@ -251,18 +251,18 @@ class BotConfig(commands.Cog):
             await ctx.reply("Random Status and Activity is now **Off**")
         await self.bot.data.change_to_default_activity()
 
-    @random_status_activity.command(aliases=["s"])
-    async def status(self, ctx: commands.Context):
+    @random_status_activity.command(aliases=["status"])
+    async def s(self, ctx: commands.Context):
         """Sub-command of rsa command, toggles RSA system status setting on or off."""
         await self.rsa_toggle(ctx.message, 1)
 
-    @random_status_activity.command(aliases=["at"])
-    async def activity_type(self, ctx: commands.Context):
+    @random_status_activity.command(aliases=["activity_type"])
+    async def at(self, ctx: commands.Context):
         """Sub-command of rsa command, toggles RSA system activity_type setting on or off."""
         await self.rsa_toggle(ctx.message, 2)
 
-    @random_status_activity.command(aliases=["a"])
-    async def activity(self, ctx: commands.Context):
+    @random_status_activity.command(aliases=["activity"])
+    async def a(self, ctx: commands.Context):
         """Sub-command of rsa command, toggles RSA system activity setting on or off."""
         await self.rsa_toggle(ctx.message, 3)
 
@@ -271,9 +271,9 @@ class BotConfig(commands.Cog):
         """Sub-command of rsa command, takes in integer input for the interval for the RSA system."""
         if seconds < 10:
             return await ctx.reply("Timer for RSA can't be less than 10 seconds")
-        self.bot.data.rsa[4] = seconds
         if self.bot.data.rsa[4] == seconds:
             return await ctx.reply("No changes has been made")
+        self.bot.data.rsa[4] = seconds
         self.bot.data.settings_db_update("rsa")
         await ctx.message.add_reaction(emoji="✅")
 
@@ -316,6 +316,6 @@ class BotConfig(commands.Cog):
                 title="Activities For RSA"
             )
             embed.set_footer(icon_url=self.bot.user.avatar_url_as(size=64),
-                             text=f"{page} / {(len(data) % 10) + 1} Pages")
+                             text=f"{page} / {int((len(data) // 10)) + 1} Pages")
 
             await ctx.reply(embed=embed)

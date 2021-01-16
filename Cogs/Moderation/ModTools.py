@@ -136,7 +136,7 @@ class ModTools(commands.Cog):
             timestamp=ctx.message.created_at
         )
         embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url_as(size=64))
-        await ctx.reply(embed=embed, delete_after=8)
+        await ctx.send(embed=embed, delete_after=8)
 
     # if an error occurs when using clear command
     @clear.error
@@ -180,7 +180,7 @@ class ModTools(commands.Cog):
             )
             return await ctx.reply(embed=embed, delete_after=10)
         else:
-            await ctx.reply("Unknown error has occurred, please try again later.", delete_after=10)
+            await ctx.send("Unknown error has occurred, please try again later.", delete_after=10)
 
     @commands.command(aliases=['ra'])
     @commands.guild_only()
