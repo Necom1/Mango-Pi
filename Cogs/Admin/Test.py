@@ -1,11 +1,14 @@
 import re
+import os
 import sys
 import typing
 import asyncio
 import discord
 import datetime
+import requests
 from discord.ext import commands, tasks
 from Components.MangoPi import MangoPi, is_admin
+from Components.MessageTools import image_check
 
 
 def setup(bot: commands.Bot):
@@ -21,7 +24,3 @@ def teardown(bot: commands.Bot):
 class Test(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-
-    @commands.command()
-    async def test(self, ctx: commands.Context):
-        raise ValueError("Error Test")

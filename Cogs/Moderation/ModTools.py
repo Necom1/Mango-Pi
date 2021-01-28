@@ -17,6 +17,32 @@ from Components.MangoPi import MangoPi
 # https://discordpy.readthedocs.io/
 
 
+def setup(bot: MangoPi):
+    """
+    Function necessary for loading Cogs.
+
+    Parameters
+    ----------
+    bot : MangoPi
+        pass in bot reference to add Cog
+    """
+    bot.add_cog(ModTools(bot))
+    print("Load Cog:\tModTools")
+
+
+def teardown(bot: MangoPi):
+    """
+    Function to be called upon unloading this Cog.
+
+    Parameters
+    ----------
+    bot : MangoPi
+        pass in bot reference to remove Cog
+    """
+    bot.remove_cog("ModTools")
+    print("Unload Cog:\tModTools")
+
+
 class ModTools(commands.Cog):
     """
     Class inherited from commands.Cog that contains normal user commands.
@@ -309,29 +335,3 @@ class ModTools(commands.Cog):
         self.cooling.append(ctx.guild.id)
         await asyncio.sleep(3600)
         self.cooling.remove(ctx.guild.id)
-
-
-def setup(bot: MangoPi):
-    """
-    Function necessary for loading Cogs.
-
-    Parameters
-    ----------
-    bot : MangoPi
-        pass in bot reference to add Cog
-    """
-    bot.add_cog(ModTools(bot))
-    print("Load Cog:\tModTools")
-
-
-def teardown(bot: MangoPi):
-    """
-    Function to be called upon unloading this Cog.
-
-    Parameters
-    ----------
-    bot : MangoPi
-        pass in bot reference to remove Cog
-    """
-    bot.remove_cog("ModTools")
-    print("Unload Cog:\tModTools")

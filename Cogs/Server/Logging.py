@@ -3,6 +3,53 @@ import asyncio
 import discord
 import datetime
 from discord.ext import commands
+from Components.MangoPi import MangoPi
+
+
+def split_string(line: str, n: int):
+    """
+    Function that will split the given string into specified length and append it to array.
+
+    Parameters
+    ----------
+    line : str
+        the string to split
+    n : int
+        max length for the string
+
+    Returns
+    -------
+    list
+        list of the split string
+    """
+    # code from: https://stackoverflow.com/questions/9475241/split-string-every-nth-character
+    return [line[i:i + n] for i in range(0, len(line), n)]
+
+
+def setup(bot: MangoPi):
+    """
+    Function necessary for loading Cogs. This will update Logging's data from mongoDB.
+
+    Parameters
+    ----------
+    bot : commands.Bot
+        pass in bot reference to add Cog
+    """
+    bot.add_cog(Logging(bot))
+    print("Load Cog:\tLogging")
+
+
+def teardown(bot: commands.Bot):
+    """
+    Function to be called upon unloading this Cog.
+
+    Parameters
+    ----------
+    bot : commands.Bot
+        pass in bot reference to remove Cog and restore command_prefix
+    """
+    bot.remove_cog("Logging")
+    print("Unload Cog:\tLogging")
 
 
 class Notify:
@@ -18,6 +65,7 @@ class Notify:
     data : dict
         dictionary storing booleans that dictates what information will show up on the log channel
     """
+
     def __init__(self, package: dict):
         """
         Constructor for Notify class.
@@ -57,7 +105,8 @@ class Logging(commands.Cog):
     instance : list
         instances of setting menu
     """
-    def __init__(self, bot: commands.Bot):
+
+    def __init__(self, bot: MangoPi):
         """
         Constructor for logging class
 
@@ -203,7 +252,7 @@ class Logging(commands.Cog):
         if isinstance(data, Notify):
             if channel.id in self.instance:
                 return await ctx.reply(f"There is a instance of setting menu for {channel.mention} already, "
-                                      "try again later.")
+                                       "try again later.")
 
             self.instance.append(channel.id)
 
@@ -539,7 +588,7 @@ class Logging(commands.Cog):
                         value=time.strftime("%#d %B %Y, %I:%M %p UTC"))
 
         kicked = None
-        
+
         def check(e: discord.AuditLogEntry):
             return e.target.id == member.id and e.action == discord.AuditLogAction.kick
 
@@ -785,49 +834,3 @@ class Logging(commands.Cog):
             if data:
                 self.db.delete_one({"_id": channel.id})
                 self.update(channel.guild.id)
-
-
-def setup(bot: commands.Bot):
-    """
-    Function necessary for loading Cogs. This will update Logging's data from mongoDB.
-
-    Parameters
-    ----------
-    bot : commands.Bot
-        pass in bot reference to add Cog
-    """
-    bot.add_cog(Logging(bot))
-    print("Load Cog:\tLogging")
-
-
-def teardown(bot: commands.Bot):
-    """
-    Function to be called upon unloading this Cog.
-
-    Parameters
-    ----------
-    bot : commands.Bot
-        pass in bot reference to remove Cog and restore command_prefix
-    """
-    bot.remove_cog("Logging")
-    print("Unload Cog:\tLogging")
-
-
-def split_string(line: str, n: int):
-    """
-    Function that will split the given string into specified length and append it to array.
-
-    Parameters
-    ----------
-    line : str
-        the string to split
-    n : int
-        max length for the string
-
-    Returns
-    -------
-    list
-        list of the split string
-    """
-    # code from: https://stackoverflow.com/questions/9475241/split-string-every-nth-character
-    return [line[i:i + n] for i in range(0, len(line), n)]

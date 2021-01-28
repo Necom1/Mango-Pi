@@ -5,6 +5,32 @@ from discord.ext import commands
 from Components.MangoPi import MangoPi, is_admin
 
 
+def setup(bot: MangoPi):
+    """
+    Function necessary for loading Cogs.
+
+    Parameters
+    ----------
+    bot : MangoPi
+        pass in MangoPi bot reference to add Cog
+    """
+    bot.add_cog(Management(bot))
+    print("Load Cog:\tManagement")
+
+
+def teardown(bot: MangoPi):
+    """
+    Function to be called upon unloading this Cog.
+
+    Parameters
+    ----------
+    bot : MangoPi
+        pass in MangoPi bot reference to remove Cog
+    """
+    bot.remove_cog("Management")
+    print("Unload Cog:\tManagement")
+
+
 class Management(commands.Cog):
     """
     Class inherited from commands.Cog that contains Cog management commands for bot admins and owner.
@@ -155,29 +181,3 @@ class Management(commands.Cog):
             await ctx.reply(ret)
         else:
             await ctx.reply(f"Removed user with ID of **{target}** from administrator list.")
-
-
-def setup(bot: MangoPi):
-    """
-    Function necessary for loading Cogs.
-
-    Parameters
-    ----------
-    bot : MangoPi
-        pass in MangoPi bot reference to add Cog
-    """
-    bot.add_cog(Management(bot))
-    print("Load Cog:\tManagement")
-
-
-def teardown(bot: MangoPi):
-    """
-    Function to be called upon unloading this Cog.
-
-    Parameters
-    ----------
-    bot : MangoPi
-        pass in MangoPi bot reference to remove Cog
-    """
-    bot.remove_cog("Management")
-    print("Unload Cog:\tManagement")

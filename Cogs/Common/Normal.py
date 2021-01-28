@@ -7,6 +7,32 @@ from discord.ext import commands
 from Components.MangoPi import MangoPi
 
 
+def setup(bot: MangoPi):
+    """
+    Function necessary for loading Cogs.
+
+    Parameters
+    ----------
+    bot : MangoPi
+        pass in bot reference to add Cog
+    """
+    bot.add_cog(Normal(bot))
+    print("Load Cog:\tNormal")
+
+
+def teardown(bot: MangoPi):
+    """
+    Function to be called upon unloading this Cog.
+
+    Parameters
+    ----------
+    bot : MangoPi
+        pass in bot reference to remove Cog
+    """
+    bot.remove_cog("Normal")
+    print("Unload Cog:\tNormal")
+
+
 class Normal(commands.Cog):
     """
     Class inherited from commands.Cog that contains normal user commands.
@@ -292,10 +318,11 @@ class Normal(commands.Cog):
         """Return an embed of server's emote list."""
         if self.bot.ignore_check(ctx):
             return
+
         emotes = ctx.guild.emojis
         if len(emotes) <= 0:
-            await ctx.reply("This server don't have any emotes.")
-            return
+            return await ctx.reply("This server don't have any emotes.")
+
         normal = []
         animated = []
         for i in emotes:
@@ -303,30 +330,34 @@ class Normal(commands.Cog):
                 animated.append(i)
             else:
                 normal.append(i)
-        temp = ""
-        embed = discord.Embed(
+
+        original = discord.Embed(
             colour=0x1abc9c,
             timestamp=ctx.message.created_at
         ).set_author(icon_url=ctx.guild.icon_url, name=f"{ctx.guild.name} | Emote List")
-        count = 1
-        for i in normal:
-            temp += f"{i} "
-            if len(temp) >= 950:
-                embed.add_field(name=f"Normal Emotes {count}", value=temp + " ")
+
+        send = []
+
+        for v in ((normal, "Normal"), (animated, "Animated")):
+            embed = original.copy()
+            if len(v[0]) > 0:
+                count = 1
                 temp = ""
-                count += 1
-        embed.add_field(name=f"Normal Emotes {count}", value=temp + " ")
-        count = 1
-        temp = ""
-        if len(animated) > 0:
-            for i in animated:
-                temp += f"{i} "
-                if len(temp) >= 950:
-                    embed.add_field(name=f"Animated Emotes {count}", value=temp + " ")
-                    temp = ""
-                    count += 1
-            embed.add_field(name=f"Animated Emotes {count}", value=temp + " ")
-        await ctx.reply(embed=embed)
+                for i in v[0]:
+                    temp += f"{i} "
+                    if len(embed) > 5000:
+                        send.append(embed.copy())
+                        embed = original.copy()
+                    if len(temp) >= 950:
+                        embed.add_field(name=f"{v[1]} Emotes {count}", value=temp + " ")
+                        temp = ""
+                        count += 1
+                if temp != "":
+                    embed.add_field(name=f"{v[1]} Emotes {count}", value=temp + " ")
+                send.append(embed.copy())
+
+        for i in send:
+            await ctx.reply(embed=i)
 
     @commands.command(aliases=["binfo"])
     async def info(self, ctx: commands.Context):
@@ -353,29 +384,3 @@ class Normal(commands.Cog):
         embed.set_footer(text="v 0.9 | Beta", icon_url="https://i.imgur.com/RPrw70n.jpg")
 
         await ctx.reply(embed=embed)
-
-
-def setup(bot: MangoPi):
-    """
-    Function necessary for loading Cogs.
-
-    Parameters
-    ----------
-    bot : MangoPi
-        pass in bot reference to add Cog
-    """
-    bot.add_cog(Normal(bot))
-    print("Load Cog:\tNormal")
-
-
-def teardown(bot: MangoPi):
-    """
-    Function to be called upon unloading this Cog.
-
-    Parameters
-    ----------
-    bot : MangoPi
-        pass in bot reference to remove Cog
-    """
-    bot.remove_cog("Normal")
-    print("Unload Cog:\tNormal")

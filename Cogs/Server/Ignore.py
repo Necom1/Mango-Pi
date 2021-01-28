@@ -3,6 +3,36 @@ from discord.ext import commands
 from Components.MangoPi import MangoPi, offline
 
 
+def setup(bot: MangoPi):
+    """
+    Function necessary for loading Cogs. This will update Ignore data from mongoDB.
+
+    Parameters
+    ----------
+    bot : MangoPi
+        pass in bot reference to add Cog
+    """
+    temp = Ignore(bot)
+    temp.update()
+    bot.add_cog(temp)
+    bot.ignore_check = temp.ignore_check
+    print("Load Cog:\tIgnore")
+
+
+def teardown(bot: MangoPi):
+    """
+    Function to be called upon unloading this Cog.
+
+    Parameters
+    ----------
+    bot : MangoPi
+        pass in bot reference to remove Cog
+    """
+    bot.remove_cog("Ignores")
+    bot.ignore_check = offline
+    print("Unload Cog:\tIgnore")
+
+
 class Ignore(commands.Cog):
     """
     Class inherited from commands.Cog that allows servers to set non-bot channel for normal commands.
@@ -145,33 +175,3 @@ class Ignore(commands.Cog):
             self.db.delete_one({"guild_id": ctx.guild.id, "_id": channel.id})
             await ctx.reply(f"{channel} has been removed from ignore commands list.", delete_after=5)
         self.update(ctx.guild.id)
-
-
-def setup(bot: MangoPi):
-    """
-    Function necessary for loading Cogs. This will update Ignore data from mongoDB.
-
-    Parameters
-    ----------
-    bot : MangoPi
-        pass in bot reference to add Cog
-    """
-    temp = Ignore(bot)
-    temp.update()
-    bot.add_cog(temp)
-    bot.ignore_check = temp.ignore_check
-    print("Load Cog:\tIgnore")
-
-
-def teardown(bot: MangoPi):
-    """
-    Function to be called upon unloading this Cog.
-
-    Parameters
-    ----------
-    bot : MangoPi
-        pass in bot reference to remove Cog
-    """
-    bot.remove_cog("Ignores")
-    bot.ignore_check = offline
-    print("Unload Cog:\tIgnore")

@@ -143,7 +143,7 @@ class BotConfig(commands.Cog):
         """
         if self.bot.data.rsa[0]:
             return await ctx.reply("Random Status and Activity is on, please turn it off before trying to modify "
-                                  "default bot status and activity")
+                                   "default bot status and activity")
 
         if not ctx.invoked_subcommand:
             status_emote = {
@@ -178,7 +178,7 @@ class BotConfig(commands.Cog):
             result = "invisible"
         else:
             return await ctx.reply("Unknown parameter inputted, try do it by color and know that this is space "
-                                  "sensitive")
+                                   "sensitive")
 
         self.bot.data.status[0] = result
         self.bot.data.settings_db_update("status")

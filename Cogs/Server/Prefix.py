@@ -3,6 +3,37 @@ from discord.ext import commands
 from Components.MangoPi import MangoPi
 
 
+def setup(bot: MangoPi):
+    """
+    Function necessary for loading Cogs. This will update Prefix's data from mongoDB and append get_prefix to
+    bot command_prefix.
+
+    Parameters
+    ----------
+    bot : MangoPi
+        pass in bot reference to add Cog and modify command_prefix
+    """
+    temp = Prefix(bot)
+    temp.update()
+    bot.add_cog(temp)
+    bot.command_prefix = temp.get_prefix
+    print("Load Cog:\tPrefix")
+
+
+def teardown(bot: MangoPi):
+    """
+    Function to be called upon unloading this Cog. This will restore bot command_prefix to bot default.
+
+    Parameters
+    ----------
+    bot : MangoPi
+        pass in bot reference to remove Cog and restore command_prefix
+    """
+    bot.command_prefix = commands.when_mentioned_or(bot.default_prefix)
+    bot.remove_cog("Prefix")
+    print("Unload Cog:\tPrefix")
+
+
 class Prefix(commands.Cog):
     """
     Class inherited from commands.Cog that allows servers to set custom prefix for the bot.
@@ -124,34 +155,3 @@ class Prefix(commands.Cog):
             self.db.update_one({"_id": ctx.guild.id}, {"$set": {"prefix": pre}})
             self.prefix[ctx.guild.id] = pre
             await ctx.reply(f"Server prefix have been updated to: ** {pre} **.")
-
-
-def setup(bot: MangoPi):
-    """
-    Function necessary for loading Cogs. This will update Prefix's data from mongoDB and append get_prefix to
-    bot command_prefix.
-
-    Parameters
-    ----------
-    bot : MangoPi
-        pass in bot reference to add Cog and modify command_prefix
-    """
-    temp = Prefix(bot)
-    temp.update()
-    bot.add_cog(temp)
-    bot.command_prefix = temp.get_prefix
-    print("Load Cog:\tPrefix")
-
-
-def teardown(bot: MangoPi):
-    """
-    Function to be called upon unloading this Cog. This will restore bot command_prefix to bot default.
-
-    Parameters
-    ----------
-    bot : MangoPi
-        pass in bot reference to remove Cog and restore command_prefix
-    """
-    bot.command_prefix = commands.when_mentioned_or(bot.default_prefix)
-    bot.remove_cog("Prefix")
-    print("Unload Cog:\tPrefix")
