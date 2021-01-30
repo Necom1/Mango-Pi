@@ -216,10 +216,14 @@ class BotData:
         if not isinstance(item, int):
             item = item.id
 
-        if not self.is_in_console(item):
-            raise ValueError(f"{item} not found within console list")
+        if item in self._data["console"]["dm"]:
+            self._data['console']['dm'].remove(item)
+        elif item in self._data['console']['console']:
+            self._data['console']['console'].remove(item)
         else:
-            self._db["error"].delete_one({"_id": item})
+            raise ValueError(f"{item} not found within console list")
+
+        self._db["error"].delete_one({"_id": item})
 
     def settings_db_update(self, update: str):
         """
@@ -339,6 +343,23 @@ class BotData:
         temp2 = self.status[2]
 
         return discord.Activity(name=temp2, type=activity_translator[temp1]) if temp1 != "" else None
+
+    def get_report_channels(self):
+        """
+        Method to return a list of TextChannels or User associated with log channels
+
+        Returns
+        -------
+        list
+            list of TextChannels or User associated with log channels
+        """
+        rets = []
+        for k in ("dm", "channel"):
+            for i in self.log_report_channels[k]:
+                temp = self.bot.get_user(i) if k == "dm" else self.bot.get_channel(i)
+                if temp:
+                    rets.append(temp)
+        return rets
 
     async def change_to_default_activity(self):
         """

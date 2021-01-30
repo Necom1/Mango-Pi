@@ -1,4 +1,8 @@
+import re
+import typing
 import discord
+import datetime
+from discord.ext.commands import Bot
 
 
 def split_string(line: str, n: int):
@@ -38,12 +42,44 @@ def image_check(link: str):
     return link.lower().endswith(('.jpg', '.png', '.jpeg', '.gif', '.webp', '.bmp', '.tiff'))
 
 
-def embed_message(message: discord.Message, jump: bool = False):
+def content_insert_emotes(bot: Bot, string: str):
+    """
+    Method that will attempt to turn the passed in string and replace emoji sequences with the appropriate emote
+
+    Parameters
+    ----------
+    bot: Bot
+        pass in bot reference to find emotes
+    string: str
+        the string that may or may not contain emote sequences (from doing message.content)
+
+    Returns
+    -------
+    str
+        the new string with emotes
+    """
+    # some code from:
+    # https://stackoverflow.com/questions/54859876/how-check-on-message-if-message-has-emoji-for-discord-py
+
+    found = list(set(re.findall(r'<:\w*:\d*>', string)))
+
+    for i in found:
+        temp = int(i.split(':')[2].replace('>', ''))
+        temp = bot.get_emoji(temp)
+        if temp:
+            string.replace(i, str(temp))
+
+    return string
+
+
+def embed_message(bot: Bot, message: discord.Message, jump: bool = False):
     """
     Method that will attempt to turn the passed in discord Message in embed (embeds if there is attachment)
 
     Parameters
     ----------
+    bot: Bot
+        the bot reference
     message: discord.Message
         discord message to turn into embed
     jump: bool
@@ -59,7 +95,7 @@ def embed_message(message: discord.Message, jump: bool = False):
     ret = []
 
     embed = discord.Embed(
-        description=message.content,
+        description=content_insert_emotes(bot, message.content),
         colour=0xdff9fb if is_dm else message.author.color,
         timestamp=message.created_at
     )
@@ -97,3 +133,95 @@ def embed_message(message: discord.Message, jump: bool = False):
         ret.append(temp)
 
     return ret
+
+
+async def send_message(bot: Bot, mode: typing.Union[discord.TextChannel, discord.User, discord.Message],
+                       content: typing.Union[str, discord.Message], special_file: tuple = None):
+    """
+    Function that sends messages to a specified location (mode) with provided content and / or special files
+
+    Parameters
+    ----------
+    bot
+    mode: typing.Union[discord.TextChannel, discord.User, discord.Message]
+        will either reply if mode is discord.Message or simply send to that specific location
+    content: typing.Union[str, discord.Message]
+        the content to send
+    special_file: tuple
+        tuple of discord attachments to embed
+
+    Returns
+    -------
+    tuple
+        returns a list with first being either channel or user ID (if mode is send in a DM), and then the messages the
+        bot send
+
+    Raises
+    ------
+    ValueError
+        if the provided content string is longer than 2000 characters
+    """
+    reply = isinstance(mode, discord.Message)
+    ret = []
+    temp = mode
+    if isinstance(temp, discord.Message):
+        temp = mode.channel
+        if isinstance(temp, discord.DMChannel):
+            temp = temp.recipient
+    ret.append(temp)
+
+    send = []
+
+    string = content if isinstance(content, str) else content.content
+    string = content_insert_emotes(bot, string)
+
+    if len(string) > 2000:
+        raise ValueError("Provided content string is longer than 2000 characters")
+
+    try:
+        files = content.attachments if not special_file else special_file
+    except AttributeError:
+        # passed in is a string
+        files = []
+
+    embed = discord.Embed(
+        timestamp=datetime.datetime.utcnow()
+    )
+
+    if len(files) == 1:
+        f = files[0]
+        if image_check(f.url):
+            embed.set_image(url=f.url)
+        else:
+            embed.add_field(name="File Attachment", value=f"{f.url}")
+        send.append(embed)
+
+    if len(files) > 1:
+        count = 1
+        embed.title = "Multiple File Attachments"
+        template = embed.copy()
+        has_non_image = False
+        for i in files:
+            template.title = f"Attachment #{count} [Image]"
+            if image_check(i.url):
+                template.set_image(url=i.url)
+                send.append(template.copy())
+            else:
+                has_non_image = True
+                embed.add_field(name=f"Attachment #{count}", value=f"[File {count}] ({i.url})")
+            count += 1
+        if has_non_image:
+            send.append(embed)
+
+    if len(send) == 0:
+        temp = await mode.reply(string) if reply else await mode.send(string)
+        ret.append(temp.id)
+    else:
+        temp = await mode.reply(string, embed=send[0]) if reply else await mode.send(string, embed=send[0])
+        ret.append(temp.id)
+    if len(send) > 1:
+        for i in range(1, len(send)):
+            temp = await mode.reply(embed=send[i]) if reply else await mode.send(embed=send[i])
+            ret.append(temp.id)
+
+    return tuple(ret)

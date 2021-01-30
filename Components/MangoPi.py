@@ -179,7 +179,8 @@ class MangoPi(commands.Bot):
         if isinstance(error, safe):
             return
 
-        if isinstance(error, (commands.CommandNotFound, commands.BadArgument, commands.errors.MissingRequiredArgument)):
+        if isinstance(error, (commands.CommandNotFound, commands.BadArgument, commands.errors.MissingRequiredArgument,
+                              discord.ext.commands.errors.BadUnionArgument)):
             emote = "😕"
             if isinstance(error, commands.CommandNotFound):
                 emote = "❓"
@@ -193,12 +194,7 @@ class MangoPi(commands.Bot):
 
         print(f"{Colors.WARNING}{ctx.channel} > {ctx.author} : {ctx.message.content}{Colors.END}")
 
-        targets = []
-        for k in ("dm", "channel"):
-            for i in self.data.log_report_channels[k]:
-                temp = self.get_user(i) if k == "dm" else self.get_channel(i)
-                if temp:
-                    targets.append(temp)
+        targets = self.data.get_report_channels()
 
         if len(targets) > 0:
             try:
@@ -207,7 +203,7 @@ class MangoPi(commands.Bot):
                 mes = split_string(f"{traceback.format_exc()}", 1900)
 
             for i in targets:
-                embeds = embed_message(ctx.message, True)
+                embeds = embed_message(self, ctx.message, True)
                 first = True
                 for k in embeds:
                     await i.send(content="Error has occurred while running this command" if first else None, embed=k)
@@ -217,4 +213,5 @@ class MangoPi(commands.Bot):
                     await i.send(f"Error Traceback Page **{count}**:\n```python\n{k}\n```")
                     count += 1
 
+        await ctx.message.add_reaction(emoji='⚠')
         raise error
