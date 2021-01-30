@@ -152,9 +152,8 @@ async def send_message(bot: Bot, mode: typing.Union[discord.TextChannel, discord
 
     Returns
     -------
-    tuple
-        returns a list with first being either channel or user ID (if mode is send in a DM), and then the messages the
-        bot send
+    discord.Embed
+        returns an embed with the sent message(s) result
 
     Raises
     ------
@@ -162,21 +161,26 @@ async def send_message(bot: Bot, mode: typing.Union[discord.TextChannel, discord
         if the provided content string is longer than 2000 characters
     """
     reply = isinstance(mode, discord.Message)
-    ret = []
     temp = mode
     if isinstance(temp, discord.Message):
         temp = mode.channel
         if isinstance(temp, discord.DMChannel):
             temp = temp.recipient
-    ret.append(temp)
+
+    ret = discord.Embed(
+        title="Message Sent",
+        colour=0xffbe76,
+        timestamp=datetime.datetime.utcnow()
+    )
+    ret.add_field(inline=False, name="Jump Link", value="Temporary hold")
+    ret.add_field(inline=False, name=f"Destination - {temp.id}", value=temp.mention)
 
     send = []
 
     string = content if isinstance(content, str) else content.content
-    string = content_insert_emotes(bot, string)
-
     if len(string) > 2000:
         raise ValueError("Provided content string is longer than 2000 characters")
+    string = content_insert_emotes(bot, string)
 
     try:
         files = content.attachments if not special_file else special_file
@@ -213,15 +217,20 @@ async def send_message(bot: Bot, mode: typing.Union[discord.TextChannel, discord
         if has_non_image:
             send.append(embed)
 
+    ids = []
+
     if len(send) == 0:
         temp = await mode.reply(string) if reply else await mode.send(string)
-        ret.append(temp.id)
     else:
         temp = await mode.reply(string, embed=send[0]) if reply else await mode.send(string, embed=send[0])
-        ret.append(temp.id)
+    ret.set_field_at(0, name="Jump Link", value=f"[Click Me!]({temp.jump_url})", inline=False)
+    ids.append(str(temp.id))
+
     if len(send) > 1:
         for i in range(1, len(send)):
             temp = await mode.reply(embed=send[i]) if reply else await mode.send(embed=send[i])
-            ret.append(temp.id)
+            ids.append(str(temp.id))
 
-    return tuple(ret)
+    ret.add_field(inline=False, name="Message IDs", value="\n".join(ids))
+
+    return ret

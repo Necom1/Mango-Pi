@@ -134,10 +134,7 @@ class ChatSystem(commands.Cog):
         await msg.add_reaction(emoji='🛑')
         data = await self.bot.wait_for("message", check=check)
         returned = await send_message(self.bot, location, data)
-        result = f"Message Sent.\nChannel: {returned[0]}\nSent Messages: "
-        for i in range(1, len(returned)):
-            result += f"{returned[i]}, "
-        await msg.edit(content=result[:-2])
+        await msg.edit(content="", embed=returned)
 
         try:
             data = self.tasks2.pop(msg.id)
@@ -146,6 +143,7 @@ class ChatSystem(commands.Cog):
             pass
 
     @commands.command()
+    @commands.check(is_admin)
     async def send(self, ctx: commands.Context,
                    destination: typing.Union[discord.DMChannel, discord.TextChannel, discord.Member, discord.User],
                    *, messages: str = ""):
@@ -154,12 +152,10 @@ class ChatSystem(commands.Cog):
             return await ctx.reply("I don't know what to send...")
 
         returned = await send_message(self.bot, destination, messages, ctx.message.attachments)
-        result = f"Message Sent.\nChannel: {returned[0]}\nSent Messages: "
-        for i in range(1, len(returned)):
-            result += f"{returned[i]}, "
-        await ctx.message.reply(content=result[:-2])
+        await ctx.message.reply(content="", embed=returned)
 
     @commands.command()
+    @commands.check(is_admin)
     async def reply(self, ctx: commands.Context,
                     destination: typing.Union[discord.DMChannel, discord.TextChannel, discord.Member, discord.User],
                     message_id: int, *, messages: str = ""):
@@ -173,10 +169,7 @@ class ChatSystem(commands.Cog):
             return await ctx.reply("Can not find the specified message")
 
         ret = await send_message(self.bot, msg, messages, ctx.message.attachments)
-        result = f"Message Sent.\nChannel: {ret[0]}\nSent Messages: "
-        for i in range(1, len(ret)):
-            result += f"{ret[i]}, "
-        await ctx.message.reply(content=result[:-2])
+        await ctx.message.reply(content="", embed=ret)
 
     @commands.group(aliases=['chatsystem'])
     @commands.check(is_admin)
@@ -323,10 +316,7 @@ class ChatSystem(commands.Cog):
                     return
 
                 returned = await send_message(self.bot, data.channel, message)
-                result = f"Message Sent.\nChannel: {returned[0]}\nSent Messages: "
-                for i in range(1, len(returned)):
-                    result += f"{returned[i]}, "
-                await message.reply(content=result[:-2])
+                await message.reply(content="", embed=returned)
 
     @commands.Cog.listener()
     async def on_message_edit(self, before: discord.Message, after: discord.Message):
