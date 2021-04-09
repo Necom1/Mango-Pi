@@ -3,29 +3,30 @@ import asyncio
 from discord.ext import commands
 from Components.DelayedTask import time_converter
 from Components.RemindTimer import RemindTimer, dm_remind
+from Components.MangoPi import MangoPi
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MangoPi):
     """
     Essential function for Cog loading that calls the update method of Reminder Cog (to fetch data from Mongo)
     before adding it to the bot.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to append the Cog
     """
     bot.add_cog(Reminder(bot))
     print("Load Cog:\tReminder")
 
 
-def teardown(bot: commands.Bot):
+def teardown(bot: MangoPi):
     """
     Method for Cog unload, this function will print to Console that Reminder Cog got unload.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to unload the Cog
     """
     bot.remove_cog("Test")
@@ -45,13 +46,13 @@ class Reminder(commands.Cog):
     memory : dict
         dictionary storing all the reminder event
     """
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: MangoPi):
         """
         Constructor for Reminder class.
 
         Parameters
         ----------
-        bot : commands.Bot
+        bot : MangoPi
             pass in bot reference for self.bot
         """
         self.bot = bot

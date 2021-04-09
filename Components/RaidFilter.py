@@ -195,10 +195,10 @@ class RaidFilter:
             if self.role not in i.roles:
                 try:
                     await i.add_roles(self.role, reason="Potential Raider")
-                    self.raiders.update({i.id: i})
+                    self.raiders[i.id] = i
                 except discord.NotFound:
                     pass
-        await self.alarm(list(temp))
+        await self.alarm(temp)
         if self.time and not self.in_progress:
             await self.countdown()
 
@@ -297,9 +297,7 @@ class RaidFilter:
             except discord.HTTPException:
                 pass
         else:
-            if member.id in self.holding.keys():
-                self.holding.pop(member.id)
-            self.holding.update({member.id: member})
+            self.holding[member.id] = member
             if self.raid:
                 self.holding.pop(member.id)
                 self.time = datetime.datetime.utcnow()
@@ -394,6 +392,11 @@ class RaidFilter:
     def toggle(self):
         """
         Method to toggle on or off the anti-raid class
+
+        Returns
+        -------
+        bool
+            the new updated status of the RaidFilter
         """
         self.switch = not self.switch
         return self.switch
