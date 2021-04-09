@@ -1,8 +1,6 @@
 import os
 import json
 import random
-import sys
-
 import discord
 import asyncio
 import datetime

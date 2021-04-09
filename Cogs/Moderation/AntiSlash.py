@@ -1,7 +1,5 @@
-import typing
 import discord
 import asyncio
-import datetime
 from discord.ext import commands
 from Components.MangoPi import MangoPi
 
@@ -99,7 +97,7 @@ class AntiSlash(commands.Cog):
             else:
                 no_perm.append(roles[i])
             if i != 0 and i % 10 == 0:
-                await msg.modify(content=f"{i} / {len(roles)} roles modified...")
+                await msg.edit(content=f"{i} / {len(roles)} roles modified...")
 
         await msg.delete()
 
