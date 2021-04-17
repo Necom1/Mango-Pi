@@ -45,7 +45,7 @@ class BotConfig(commands.Cog):
 
     def __init__(self, bot: MangoPi):
         """
-        Constructor for BotCofig class
+        Constructor for BotConfig class
 
         Parameters
         ----------

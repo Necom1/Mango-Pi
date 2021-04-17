@@ -39,8 +39,8 @@ class Normal(commands.Cog):
 
     Attributes
     ----------
-    bot : commands.Bot
-        commands.Bot reference
+    bot : MangoPi
+        MangoPi bot reference
     """
     def __init__(self, bot: MangoPi):
         """
@@ -370,7 +370,7 @@ class Normal(commands.Cog):
             title="I am a discord bot filled with random features! I am made using Python and implements MongoDB!"
         )
         embed.set_author(name=f"Hi! I am {self.bot.user.name}!",
-                         icon_url="http://icons.iconarchive.com/icons/cornmanthe3rd/plex/128/Other-python-icon.png")
+                         icon_url="https://icons.iconarchive.com/icons/cornmanthe3rd/plex/128/Other-python-icon.png")
         embed.set_thumbnail(url=self.bot.user.avatar_url_as(size=256))
         creator = await self.bot.fetch_user(267909205225242624)
         embed.add_field(name="Bot Master", value=self.bot.app_info.owner.mention)

@@ -54,12 +54,35 @@ def is_admin(ctx: commands.Context):
     return ctx.bot.data.staff_check(ctx.author.id)
 
 
+def highest_role_position(arr: list):
+    """
+    Function that takes in an array of discord Roles and return the int of the highest position from all those roles
+
+    Parameters
+    ----------
+    arr: list
+        the array of discord roles
+
+    Returns
+    -------
+    int
+        the highest position found within the array of discord roles
+    """
+    ret = 0
+    for i in arr:
+        if i.position > ret:
+            ret = i.position
+
+    return ret
+
+
 class MangoPi(commands.Bot):
 
     def __del__(self):
         print(Colors.BLUE + Colors.BOLD + "Bot Terminated" + Colors.END)
 
     def __init__(self):
+        self.last_dc = None
         self.ignore_check = offline
         self._first_ready = True
         self._separator = "---------------------------------------------------------"
@@ -147,13 +170,37 @@ class MangoPi(commands.Bot):
 
             self._first_ready = False
 
+            for i in self.data.get_report_channels():
+                await i.send("I am ready! 👌")
+
     async def on_resumed(self):
+        now = datetime.datetime.utcnow()
         print(f"{self._separator}\n\tBot Session Resumed\n{self._separator}")
+
+        if not self.last_dc:
+            return
+
+        targets = self.data.get_report_channels()
+
+        embed1 = discord.Embed(colour=0xd63031, title="Bot Disconnected From Discord", timestamp=self.last_dc)
+        embed1.set_footer(text="Disconnected ")
+        embed1.add_field(name="Detailed Time", value=self.last_dc.strftime("UTC Time:\n`%B %#d, %Y`\n%I:%M %p"))
+
+        embed2 = discord.Embed(title="Bot Session Resumed", colour=0x1dd1a1, timestamp=now)
+        embed2.set_footer(text="Resumed ")
+        embed2.add_field(name="Detailed Time", value=now.strftime("UTC Time:\n`%B %#d, %Y`\n%I:%M %p"))
+
+        for i in targets:
+            await i.send(embed=embed1)
+            await i.send(embed=embed2)
+
+        self.last_dc = None
 
     async def on_connect(self):
         print(f"\tConnected to Discord\n{self._separator}")
 
     async def on_disconnect(self):
+        self.last_dc = datetime.datetime.utcnow()
         print(f"{self._separator}\n\tDisconnected from Discord\n{self._separator}")
 
     async def on_command_error(self, ctx: commands.Context, error: Exception):

@@ -5,28 +5,29 @@ import datetime
 from discord.ext import commands
 from Components.DelayedTask import time_converter
 from Components.TemporaryBan import TemporaryBan, ban_over
+from Components.MangoPi import highest_role_position, MangoPi
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MangoPi):
     """
-    Function necessary for loading Cogs. This function also populates the Cog with temporary ban data.
+    Function necessary for loading Cogs.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to add Cog
     """
     bot.add_cog(Removal(bot))
     print("Load Cog:\tRemoval")
 
 
-def teardown(bot: commands.Bot):
+def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to remove Cog
     """
     bot.remove_cog("Removal")
@@ -39,7 +40,7 @@ class Removal(commands.Cog):
 
     Attributes
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         bot reference
     db : MongoClient
         mongoDB client pointing to "reminders" collection
@@ -47,13 +48,13 @@ class Removal(commands.Cog):
         dictionary of all the temporary bans
     """
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: MangoPi):
         """
         Constructor for Removal class.
 
         Parameters
         ----------
-        bot : commands.Bot
+        bot : MangoPi
             pass in bot reference
         """
         self.bot = bot
@@ -93,7 +94,9 @@ class Removal(commands.Cog):
         # Reference: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html
         if len(targets) == 0 and len(targets) > 1:
             return await ctx.reply("Can not locate any kick targets. "
-                                  "Please make sure they are currently members of this server.")
+                                   "Please make sure they are currently members of this server.")
+
+        kicker = highest_role_position(ctx.author.roles)
 
         reason = f'{ctx.author}[{ctx.author.id}]: "{args}"'
 
@@ -131,7 +134,10 @@ class Removal(commands.Cog):
                     await message.delete()
 
         for i in targets:
-            await ctx.guild.kick(i, reason=reason)
+            if kicker > highest_role_position(i.roles):
+                await ctx.guild.kick(i, reason=reason)
+            else:
+                await ctx.send(f"Failed to kick {i} as your role isn't high enough", delete_after=10)
 
         await ctx.message.add_reaction(emoji='✅')
 
@@ -190,7 +196,9 @@ class Removal(commands.Cog):
             delete_days = 7
         if len(targets) == 0:
             return await ctx.reply("Can not locate any ban targets. "
-                                  "Please make sure they are currently members of this server.")
+                                   "Please make sure they are currently members of this server.")
+
+        banner = highest_role_position(ctx.author.roles)
 
         reason = f'{ctx.author}[{ctx.author.id}]: "{args}"'
 
@@ -228,7 +236,10 @@ class Removal(commands.Cog):
                     await message.delete()
 
         for i in targets:
-            await ctx.guild.ban(i, delete_message_days=delete_days, reason=reason)
+            if banner > highest_role_position(i.roles):
+                await ctx.guild.ban(i, delete_message_days=delete_days, reason=reason)
+            else:
+                await ctx.send(f"Failed to ban {i} as your role isn't high enough", delete_after=10)
 
         await ctx.message.add_reaction(emoji='✅')
 
@@ -241,10 +252,18 @@ class Removal(commands.Cog):
         success = ""
         fail = ""
         count = 0
+        banner = highest_role_position(ctx.author.roles)
         for i in target:
-            usr = await self.bot.fetch_user(i)
+            mem = ctx.guild.get_member(i)
             try:
-                await ctx.guild.ban(usr, reason=reason)
+                if not mem:
+                    usr = await self.bot.fetch_user(i)
+                    await ctx.guild.ban(usr, reason=reason)
+                else:
+                    if banner > highest_role_position(mem.roles):
+                        await mem.ban(reason=reason)
+                    else:
+                        fail += f"<@!{i}>\n"
             except discord.Forbidden:
                 return await ctx.reply("I don't have the ability to ban someone~")
             except discord.HTTPException:
@@ -272,6 +291,10 @@ class Removal(commands.Cog):
                        args: str = "No reason"):
         """Remove all specified days of recent messages from the user while removing them from the server"""
         args = f'{ctx.author}[{ctx.author.id}] Soft ban for: "{args}" with removal of {delete_days} day of messages.'
+
+        if highest_role_position(ctx.author.roles) <= highest_role_position(target.roles):
+            return await ctx.send(f"Failed to ban {target} as your role isn't high enough", delete_after=10)
+
         await ctx.guild.ban(target, reason=args, delete_message_days=delete_days)
         await ctx.guild.unban(target, reason=args)
         await ctx.message.add_reaction(emoji='✅')
@@ -304,6 +327,10 @@ class Removal(commands.Cog):
         """Command to temporary ban a user for set number of days"""
         if len(reason) > 1000:
             return await ctx.reply("Too long of a ban reason... Try keep it under 1000 letters...")
+
+        if isinstance(target, discord.Member):
+            if highest_role_position(ctx.author.roles) > highest_role_position(target.roles):
+                return await ctx.send(f"Failed to ban {target} as your role isn't high enough", delete_after=10)
 
         try:
             time = time_converter(duration, ctx.message.created_at)

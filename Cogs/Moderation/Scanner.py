@@ -3,30 +3,31 @@ import discord
 import asyncio
 import datetime
 from discord.ext import commands
+from Components.MangoPi import MangoPi
 from Components.Detector import Detector
 from Components.DelayedTask import range_calculator
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to add Cog
     """
     bot.add_cog(Scanner(bot))
     print("Load Cog:\tScanner")
 
 
-def teardown(bot: commands.Bot):
+def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to remove Cog
     """
     bot.remove_cog("Scanner")
@@ -39,7 +40,7 @@ class Scanner(commands.Cog):
 
     Attributes
     ----------
-    bot: commands.Bot
+    bot: MangoPi
         bot reference
     data: dict
         dictionary containing all the Detector classes
@@ -55,13 +56,13 @@ class Scanner(commands.Cog):
         the default user name/nickname to change to
     """
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: MangoPi):
         """
         Constructor for Cog Scanner
 
         Parameters
         ----------
-        bot: commands.Bot
+        bot: MangoPi
             pass in bot reference
         """
         self.bot = bot

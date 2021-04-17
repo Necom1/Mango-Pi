@@ -1,30 +1,31 @@
 import discord
 import asyncio
 from discord.ext import commands
+from Components.MangoPi import MangoPi
 from Components.MuteTimer import MuteTimer, remove_mute
 from Components.DelayedTask import time_converter, range_calculator
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to add Cog
     """
     bot.add_cog(Mute(bot))
     print("Load Cog:\tMute")
 
 
-def teardown(bot: commands.Bot):
+def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to remove Cog
     """
     bot.remove_cog("Mute")
@@ -37,7 +38,7 @@ class Mute(commands.Cog):
 
     Attributes
     ----------
-    bot: commands.Bot
+    bot: MangoPi
         bot reference
     timers: dict
         dictionary containing the MuteTimers for servers
@@ -49,13 +50,13 @@ class Mute(commands.Cog):
         mongo reference to mute_time collection
     """
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: MangoPi):
         """
         Constructor for the Mute class
 
         Parameters
         ----------
-        bot: commands.Bot
+        bot: MangoPi
             pass in bot reference
         """
         self.bot = bot
@@ -394,7 +395,7 @@ class Mute(commands.Cog):
                 raise KeyError()
         except KeyError:
             return await ctx.reply(f"Mute role not setup in the server. Please set it up with `{ctx.prefix}mr set "
-                                  f"<role mention or ID>")
+                                   f"<role mention or ID>")
 
         has_role = role in target.roles
         time_str = time1.strftime('%B %#d, %Y | %I:%M %p UTC')

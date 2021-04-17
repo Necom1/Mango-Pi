@@ -2,29 +2,30 @@ import discord
 import typing
 from pymongo import MongoClient
 from discord.ext import commands
+from Components.MangoPi import MangoPi
 from Components.AutoRole import AutoRole
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to add Cog
     """
     bot.add_cog(JoinRole(bot))
     print("Load Cog:\tJoinRole")
 
 
-def teardown(bot: commands.Bot):
+def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to remove Cog
     """
     bot.remove_cog("JoinRole")
@@ -37,20 +38,20 @@ class JoinRole(commands.Cog):
 
     Attributes
     ----------
-    bot: commands.Bot
+    bot: MangoPi
         bot reference
     db: MongoClient
         the MongoClient reference to the join_auto collection
     data: dict
         the dictionary that holds AutoRole class for the specific server
     """
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: MangoPi):
         """
         Constructor for the JoinRole class
 
         Parameters
         ----------
-        bot: commands.Bot
+        bot: MangoPi
             pass in bot reference
         """
         self.bot = bot

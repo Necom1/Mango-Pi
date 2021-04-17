@@ -1,26 +1,75 @@
 import discord
 import asyncio
 from discord.ext import commands
-from Components.MangoPi import MangoPi
+from Components.MangoPi import highest_role_position
 
 
-def setup(bot: MangoPi):
+def setup(bot: commands.Bot):
+    """
+    Function necessary for loading Cogs.
+
+    Parameters
+    ----------
+    bot : commands.Bot
+        pass in bot reference to add Cog
+    """
     bot.add_cog(AntiSlash(bot))
     print("Load Cog:\tAntiSlash")
 
 
-def teardown(bot: MangoPi):
+def teardown(bot: commands.Bot):
+    """
+    Function to be called upon unloading this Cog.
+
+    Parameters
+    ----------
+    bot : commands.Bot
+        pass in bot reference to remove Cog
+    """
     bot.remove_cog("AntiSlash")
     print("Unload Cog:\tAntiSlash")
 
 
 class AntiSlash(commands.Cog):
-    def __init__(self, bot: MangoPi):
+    """
+    Class inherited from commands.Cog that contains commands to remove or list roles with slash perms
+
+    Attributes
+    ----------
+    bot: commands.Bot
+        bot reference
+    api_limit: list
+        list that contains server ID that disallows use of removing perms from roles for 1 hr
+    """
+    def __init__(self, bot: commands.Bot):
+        """
+        Constructor of AntiSlash class
+
+        Parameters
+        ----------
+        bot: commands.Bot
+            pass in bot reference
+        """
         self.bot = bot
         self.api_limit = []
 
     @staticmethod
     def slash_perm_check(arr: list, reverse: bool = False):
+        """
+        Method that checks the passed in array and filters it
+
+        Parameters
+        ----------
+        arr: list
+            array of discord roles to filter
+        reverse: bool
+            return roles without the permission to use slash perm instead, default false
+
+        Returns
+        -------
+        tuple
+            the filtered discord roles
+        """
         ret = []
 
         for i in arr:
@@ -31,7 +80,7 @@ class AntiSlash(commands.Cog):
                 if not i.permissions.use_slash_commands:
                     ret.append(i)
 
-        return ret
+        return tuple(ret)
 
     @commands.guild_only()
     @commands.command(aliases=["check/"])
@@ -74,10 +123,7 @@ class AntiSlash(commands.Cog):
             self.api_limit.append(ctx.guild.id)
 
         roles = self.slash_perm_check(ctx.guild.roles)
-        hoist = 0
-        for i in ctx.me.roles:
-            if i.position > hoist:
-                hoist = i.position
+        hoist = highest_role_position(ctx.me.roles)
 
         msg = await ctx.reply(f"0 / {len(roles)} roles modified")
 

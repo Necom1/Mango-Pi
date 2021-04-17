@@ -2,28 +2,29 @@ import typing
 import discord
 import datetime
 from discord.ext import commands
+from Components.MangoPi import MangoPi
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to add Cog
     """
     bot.add_cog(Warn(bot))
     print("Load Cog:\tWarn")
 
 
-def teardown(bot: commands.Bot):
+def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to remove Cog
     """
     bot.remove_cog("Warn")
@@ -36,18 +37,18 @@ class Warn(commands.Cog):
 
     Attributes
     ----------
-    bot: commands.Bot
+    bot: MangoPi
         bot reference
     db: MongoClient
         mongo reference to the warns collection
     """
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: MangoPi):
         """
         Constructor for Warn class
 
         Parameters
         ----------
-        bot: commands.Bot
+        bot: MangoPi
             pass in bot reference
         """
         self.bot = bot

@@ -2,29 +2,30 @@ import discord
 import typing
 import asyncio
 from discord.ext import commands
+from Components.MangoPi import MangoPi
 from Components.RoleSelector import RoleSelector
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to add Cog
     """
     bot.add_cog(RoleMenu(bot))
     print("Load Cog:\tRoleMenu")
 
 
-def teardown(bot: commands.Bot):
+def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to remove Cog
     """
     bot.remove_cog("RoleMenu")
@@ -37,7 +38,7 @@ class RoleMenu(commands.Cog):
 
     Attributes
     ----------
-    bot: commands.Bot
+    bot: MangoPi
         bot client reference
     data: dict
         dictionary containing all the RoleSelectors for the server
@@ -45,13 +46,13 @@ class RoleMenu(commands.Cog):
         dictionary containing server and the name along with the message ID of the RoleSelector
     """
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: MangoPi):
         """
         Constructor of RoleMenu that takes in bot from parameter to append it to self.bot
 
         Parameters
         ----------
-        bot: commands.Bot
+        bot: MangoPi
             bot reference
         """
         self.bot = bot

@@ -1,29 +1,30 @@
 import discord
 import asyncio
 from discord.ext import commands
+from Components.MangoPi import MangoPi
 from Components.RaidFilter import RaidFilter
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs. This will update AntiRaid's data from mongoDB.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to add Cog
     """
     bot.add_cog(AntiRaid(bot))
     print("Load Cog:\tAntiRaid")
 
 
-def teardown(bot: commands.Bot):
+def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
     Parameters
     ----------
-    bot : commands.Bot
+    bot : MangoPi
         pass in bot reference to remove Cog
     """
     bot.remove_cog("AntiRaid")
@@ -36,21 +37,21 @@ class AntiRaid(commands.Cog):
 
     Attributes
     ----------
-    bot : commands.Bot
-        commands.Bot reference
+    bot : MangoPi
+        MangoPi bot reference
     data : dict
         Dictionary containing server's anti-raid system
     db : MongoClient
         MongoDB client reference for "anti-raid" collection
     """
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: MangoPi):
         """
         Constructor for AntiRaid class.
 
         Parameters
         ----------
-        bot : commands.Bot
+        bot : MangoPi
             pass in bot reference for the bot
         """
         self.bot = bot
@@ -107,7 +108,7 @@ class AntiRaid(commands.Cog):
             return self.data[ctx.guild.id]
         except KeyError:
             return await ctx.reply(f"This server have not setup an anti-raid yet. Do "
-                                  f"`{ctx.prefix}ar create <raider role>` to set it up.")
+                                   f"`{ctx.prefix}ar create <raider role>` to set it up.")
 
     def database_update(self, data: RaidFilter):
         """
@@ -185,14 +186,14 @@ class AntiRaid(commands.Cog):
                 ret = await data.release_all()
                 for i in ret:
                     await ctx.reply(embed=discord.Embed(title="Free marked raiders",
-                                                       colour=0x4cd137, description=i))
+                                                        colour=0x4cd137, description=i))
 
     @anti_raid.command()
     async def raid(self, ctx: commands.Context, indefinite: bool = True):
         """Turn on raid mode and send all user in holding cell to raid cell.
         Additional parameter whether or not the raid mode is indefinite."""
         data = await self.verify(ctx)
-        if not isinstance(data, discord.Message):
+        if isinstance(data, RaidFilter):
             await data.triggered(indefinite)
             await ctx.message.add_reaction(emoji="🏃")
 
