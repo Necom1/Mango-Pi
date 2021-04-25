@@ -242,12 +242,15 @@ class Mute(commands.Cog):
         except KeyError:
             return
 
-        if isinstance(channel, discord.TextChannel):
-            await channel.set_permissions(data, send_messages=False, add_reactions=False,
-                                          reason="Sync newly created text channel with mute role")
-        else:
-            await channel.set_permissions(data, speak=False, connect=False, use_voice_activation=False,
-                                          reason="Sync newly created text channel with mute role")
+        try:
+            if isinstance(channel, discord.TextChannel):
+                await channel.set_permissions(data, send_messages=False, add_reactions=False,
+                                              reason="Sync newly created text channel with mute role")
+            else:
+                await channel.set_permissions(data, speak=False, connect=False, use_voice_activation=False,
+                                              reason="Sync newly created text channel with mute role")
+        except (discord.Forbidden, discord.HTTPException):
+            pass
 
     @commands.Cog.listener()
     async def on_guild_role_delete(self, role: discord.Role):
