@@ -120,6 +120,8 @@ class MangoPi(commands.Bot):
         ------
         ConnectionRefusedError
             if bot failed to connect to MongoDB
+        ValueError
+            if bot token is an empty string
         """
         self.last_dc = None
         self.ignore_check = offline
@@ -157,6 +159,9 @@ class MangoPi(commands.Bot):
         self.data = None
 
         self.dc_report = False
+
+        if data.bot_token == "":
+            raise ValueError("No bot token given")
 
         print("=========================================================\n"
               f"Now Starting Bot\t|\t{platform.system()}\n{self._separator}")

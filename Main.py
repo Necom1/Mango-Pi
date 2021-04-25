@@ -36,3 +36,6 @@ except ConnectionRefusedError:
     print("- Go into the Bot Settings Folder and check keys.json and see if there is any spelling error")
     print("- Use MongoCompass to check if the specified MongoDB server is online")
     exit(1)
+except ValueError:
+    print("No bot token given, please check ./Bot Settings/keys.json and make sure you put in your bot token")
+    exit(2)
