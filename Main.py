@@ -1,6 +1,5 @@
 import sys
 import subprocess
-from Components.MangoPi import MangoPi
 
 
 # References:
@@ -20,9 +19,9 @@ checks = [
 
 try:
     import pytz
-    import pymongo
     import requests
     import discord
+    import pymongo
 except ImportError:
     print("Missing installation detected, will now attempt to manually install libraries")
     for i in checks:
@@ -30,6 +29,7 @@ except ImportError:
         subprocess.check_call([sys.executable, "-m", "pip", "install", i])
 
 try:
+    from Components.MangoPi import MangoPi
     MangoPi()
 except ConnectionRefusedError:
     print("Bot has failed to connect to the specified MongoDB")
