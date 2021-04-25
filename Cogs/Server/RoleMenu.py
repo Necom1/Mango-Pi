@@ -257,7 +257,7 @@ class RoleMenu(commands.Cog):
 
         if not isinstance(ret, RoleSelector):
             return await ctx.reply(f"**{name}** role menu does not exists, please create it first with the create "
-                                  f"command.")
+                                   f"command.")
         mes += f"{hold} >> `{role}` >> **{name}**"
         data = self.db.find_one({"guild_id": ctx.guild.id, "name": name})
         data['role_id'].append(role.id)
@@ -329,6 +329,7 @@ class RoleMenu(commands.Cog):
     @role_menu.command(aliases=['p'])
     async def purge(self, ctx: commands.Context, *, name):
         """Delete the specified remove menu"""
+
         def check(reaction1: discord.Reaction, user1: discord.User):
             return (reaction1.message.id == message.id) and (user1.id == ctx.author.id) and (str(reaction1.emoji) in
                                                                                              ['✅', '❌'])

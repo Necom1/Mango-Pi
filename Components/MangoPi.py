@@ -1,13 +1,12 @@
 import os
-import json
-import random
+import sys
 import discord
 import asyncio
 import datetime
 import platform
 import traceback
-from pymongo import MongoClient
 from discord.ext import commands
+from pymongo import errors, MongoClient
 from Components.BotData import BotData
 from Components.KeyReader import KeyReader
 from Components.HelpMenu import CustomHelpCommand
@@ -77,22 +76,66 @@ def highest_role_position(arr: list):
 
 
 class MangoPi(commands.Bot):
+    """
+    MangoPi class inherited from commands.Bot class
+
+    Attributes
+    ----------
+    last_dc : datetime.datetime
+        UTC time of when did the bot last disconnected from discord
+    ignore_check : def
+        ignore check function of the bot
+    _first_ready : bool
+        private variable that defines whether or not this is bot's first ready
+    _separator : str
+        separator string
+    mongo : MongoClient
+        the connection to bot's MongoDB via MongoClient
+    default_prefix : str
+        string of bot's default prefix
+    loaded_cogs : dict
+        dictionary of strings that for bot's loaded Cogs
+    unloaded_cogs : dict
+        dictionary of strings for unloaded Cogs
+    app_info : discord.AppInfo
+        discord application info fetched from API or none
+    data : BotData
+        BotData class reference for remembering bot admins
+    dc_report : bool
+        whether or not to report bot disconnection (typically less than a second dc)
+    """
 
     def __del__(self):
+        """
+        Overrides default __del__ method to print a bot termination message
+        """
         print(Colors.BLUE + Colors.BOLD + "Bot Terminated" + Colors.END)
 
     def __init__(self):
+        """
+        Constructor of the MangoPi class that will prepare the bot will necessary variables, MongoClient, Intents, and
+        also self call the run method to run the bot.
+
+        Raises
+        ------
+        ConnectionRefusedError
+            if bot failed to connect to MongoDB
+        """
         self.last_dc = None
         self.ignore_check = offline
         self._first_ready = True
         self._separator = "---------------------------------------------------------"
 
-        print("=========================================================\n"
-              f"Now Starting Bot\t|\t{platform.system()}\n{self._separator}")
-
         data = KeyReader()
 
-        self.mongo = MongoClient(data.db_address)[data.cluster]
+        try:
+            # code reference:
+            # https://stackoverflow.com/questions/30539183/how-do-you-check-if-the-client-for-a-mongodb-instance-is-valid
+            self.mongo = MongoClient(data.db_address, serverSelectionTimeoutMS=10)[data.cluster]
+            self.mongo.collection_names()
+        except errors.ServerSelectionTimeoutError:
+            raise ConnectionRefusedError("Can not connect to the specified MongoDB")
+
         self.default_prefix = data.prefix
         self.loaded_cogs = {}
         self.unloaded_cogs = {}
@@ -112,6 +155,11 @@ class MangoPi(commands.Bot):
 
         self.app_info = None
         self.data = None
+
+        self.dc_report = False
+
+        print("=========================================================\n"
+              f"Now Starting Bot\t|\t{platform.system()}\n{self._separator}")
 
         self.run(data.bot_token)
 
@@ -152,6 +200,10 @@ class MangoPi(commands.Bot):
                         # traceback.format_exc()
 
     async def on_ready(self):
+        """
+        Async method that replaces commands.Bot's on_ready. Calls _load_all_cogs method along with outputting info onto
+        console when the bot is ready and connected to discord.
+        """
         if self._first_ready:
             self.app_info = await self.application_info()
             self.data = BotData(self)
@@ -174,34 +226,74 @@ class MangoPi(commands.Bot):
                 await i.send("I am ready! 👌")
 
     async def on_resumed(self):
+        """
+        Async method that replace the commands.Bot's on_resumed that will send disconnect and reconnect time details
+        onto an admin discord channel if dc_report is true.
+        """
         now = datetime.datetime.utcnow()
         print(f"{self._separator}\n\tBot Session Resumed\n{self._separator}")
 
-        if not self.last_dc:
+        if not self.last_dc and self.dc_report:
             return
 
         targets = self.data.get_report_channels()
 
-        embed1 = discord.Embed(colour=0xd63031, title="Bot Disconnected From Discord", timestamp=self.last_dc)
-        embed1.set_footer(text="Disconnected ")
-        embed1.add_field(name="Detailed Time", value=self.last_dc.strftime("UTC Time:\n`%B %#d, %Y`\n%I:%M %p"))
-
-        embed2 = discord.Embed(title="Bot Session Resumed", colour=0x1dd1a1, timestamp=now)
-        embed2.set_footer(text="Resumed ")
-        embed2.add_field(name="Detailed Time", value=now.strftime("UTC Time:\n`%B %#d, %Y`\n%I:%M %p"))
+        embed = discord.Embed(title="Bot Session Resumed", colour=0x1dd1a1, timestamp=now)
+        embed.set_footer(text="Resumed ")
+        embed.add_field(inline=False, name="Disconnect Time",
+                        value=self.last_dc.strftime("UTC Time:\n`%B %#d, %Y`\n%I:%M:%S %p"))
+        embed.add_field(name="Resume Time", value=now.strftime("UTC Time:\n`%B %#d, %Y`\n%I:%M:%S %p"))
 
         for i in targets:
-            await i.send(embed=embed1)
-            await i.send(embed=embed2)
+            await i.send(embed=embed)
 
         self.last_dc = None
 
     async def on_connect(self):
+        """
+        Async event method that overrides on_connect to print out a message onto console
+        """
         print(f"\tConnected to Discord\n{self._separator}")
 
     async def on_disconnect(self):
+        """
+        Async event method that overrides on_disconnect to print out a message onto console regarding the disconnect
+        """
         self.last_dc = datetime.datetime.utcnow()
         print(f"{self._separator}\n\tDisconnected from Discord\n{self._separator}")
+
+    async def on_error(self, event_method: str, *args, **kwargs):
+        """
+        Async method that overrides commands.Bot's error event handler. This will attempt to convert error into string
+        to send over discord admin channels.
+
+        https://discordpy.readthedocs.io/en/stable/api.html?highlight=on_error#discord.on_error
+
+        Parameters
+        ----------
+        event_method : str
+            The name of the event that raised the exception.
+        args
+            The positional arguments for the event that raised the exception.
+        kwargs
+            The keyword arguments for the event that raised the exception.
+        """
+        safe = ("on_command_error", "on_error", "on_disconnect")
+        if event_method in safe:
+            return
+
+        targets = self.data.get_report_channels()
+        mes = split_string(f"{traceback.format_exc()}", 1900)
+        count = 1
+        for i in targets:
+            await i.send(f"An error has occurred in {event_method}")
+            for k in mes:
+                await i.send(f"Error Traceback Page **{count}**:\n```py\n{k}\n```")
+                count += 1
+
+        # the default error handling from client
+        print('Ignoring exception in {}'.format(event_method), file=sys.stderr)
+        traceback.print_exc()
 
     async def on_command_error(self, ctx: commands.Context, error: Exception):
         """
@@ -257,7 +349,7 @@ class MangoPi(commands.Bot):
                     first = False
                 count = 1
                 for k in mes:
-                    await i.send(f"Error Traceback Page **{count}**:\n```python\n{k}\n```")
+                    await i.send(f"Error Traceback Page **{count}**:\n```py\n{k}\n```")
                     count += 1
 
         await ctx.message.add_reaction(emoji='⚠')

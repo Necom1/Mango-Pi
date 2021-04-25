@@ -119,7 +119,7 @@ class Normal(commands.Cog):
         """Return the current UTC time."""
         if self.bot.ignore_check(ctx):
             return
-        await ctx.reply(datetime.datetime.utcnow().strftime("UTC Time:\n`%B %#d, %Y`\n%I:%M %p"))
+        await ctx.reply(datetime.datetime.utcnow().strftime("UTC Time:\n`%B %#d, %Y`\n%I:%M:%S %p"))
 
     # get user info
     @commands.command(aliases=["userinfo", "uinfo"])

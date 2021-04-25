@@ -1,3 +1,4 @@
+import typing
 import discord
 import asyncio
 from discord.ext import commands
@@ -225,6 +226,28 @@ class Mute(commands.Cog):
 
             if role not in after.roles:
                 await target.terminate()
+
+    @commands.Cog.listener()
+    async def on_guild_channel_create(self, channel: typing.Union[discord.TextChannel, discord.VoiceChannel]):
+        """
+        Event listener for server channel creation. Will attempt to automatically set perm for mute roles
+
+        Parameters
+        ----------
+        channel: typing.Union[discord.TextChannel, discord.VoiceChannel]
+            the newly created text or voice channel
+        """
+        try:
+            data = self.roles[channel.guild.id]
+        except KeyError:
+            return
+
+        if isinstance(channel, discord.TextChannel):
+            await channel.set_permissions(data, send_messages=False, add_reactions=False,
+                                          reason="Sync newly created text channel with mute role")
+        else:
+            await channel.set_permissions(data, speak=False, connect=False, use_voice_activation=False,
+                                          reason="Sync newly created text channel with mute role")
 
     @commands.Cog.listener()
     async def on_guild_role_delete(self, role: discord.Role):

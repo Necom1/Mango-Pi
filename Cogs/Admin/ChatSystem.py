@@ -72,6 +72,11 @@ class ChatSystem(commands.Cog):
         for i in list(self.db.find({})):
             self.data.append(i['_id'])
 
+        self.bl_db = bot.mongo["chat_blacklist"]
+        self.bl_data = []
+        for i in list(self.bl_db.find()):
+            self.bl_data.append(i['_id'])
+
         self.tasks = {}
         self.cache = {}
         self.cache2 = {}
@@ -153,6 +158,35 @@ class ChatSystem(commands.Cog):
 
         returned = await send_message(self.bot, destination, messages, ctx.message.attachments)
         await ctx.message.reply(content="", embed=returned)
+
+    @commands.command(aliases=['msg'])
+    async def message_bot_admins(self, ctx: commands.Context, *, m: str = ""):
+        channel_check = isinstance(ctx.channel, discord.TextChannel)
+        check_id = ctx.channel.id if channel_check else ctx.author.id
+
+        if check_id in self.data:
+            # the chat is currently being focused on, no need to send dup
+            return
+
+        print(ctx.channel.id)
+        print(self.bl_data)
+
+        if ctx.author.id in self.bl_data:
+            return
+        if ctx.channel.id in self.bl_data:
+            return
+
+        if len(ctx.message.attachments) < 1 and m == "":
+            return await ctx.send("W-What am I sending...?")
+
+        original = embed_message(self.bot, ctx.message)
+        destinations = self.bot.data.get_report_channels()
+        extra = f"in {ctx.channel.mention} ({ctx.channel.id})" if channel_check else \
+            f"from {ctx.author.mention} ({ctx.author.id})'s DM"
+
+        for a in original:
+            for i in destinations:
+                await i.send(f"**From** `message_bot_admins` command {extra}", embed=a)
 
     @commands.command()
     @commands.check(is_admin)
@@ -285,6 +319,50 @@ class ChatSystem(commands.Cog):
         except (discord.HTTPException, discord.NotFound):
             return ctx.reply("Unknown error has occurred, likely the message is too old to be deleted")
         await ctx.message.add_reaction(emoji="🗑️")
+
+    @chat.command(aliases=['i'])
+    async def ignore(self, ctx: commands.Context, target: typing.Union[discord.User, discord.TextChannel, int]):
+        """Add a specified ID into the blacklist that prevent message_bot_admins usage"""
+        if not isinstance(target, int):
+            target = target.id
+
+        if target in self.bl_data:
+            self.bl_db.delete_one({"_id": target})
+            self.bl_data.remove(target)
+            await ctx.message.add_reaction(emoji='➖')
+        else:
+            self.bl_db.insert_one({"_id": target})
+            self.bl_data.append(target)
+            await ctx.message.add_reaction(emoji='➕')
+
+    @chat.command(aliases=['il'])
+    async def ignore_list(self, ctx: commands.Context, page: int = 1):
+        """Show the ignored channel / user ID page"""
+        result = ""
+        mini = (page - 1) * 30
+        maxi = page * 30
+        if maxi > len(self.bl_data):
+            maxi = len(self.bl_data)
+        for i in range(mini, maxi):
+            result += f"{self.bl_data[i]}\n"
+
+        max_page = int(maxi / 30) + 1
+
+        await ctx.reply(embed=discord.Embed(
+            description="Empty!" if result == "" else result,
+            title=f"Ignored List Page {page} / {max_page}",
+            color=0x18dcff
+        ))
+
+    @chat.command(aliases=['is', 'if'])
+    async def ignore_search(self, ctx: commands.Context, target: typing.Union[discord.User, discord.TextChannel, int]):
+        """Returns reaction 👍 if the specified target is in the ignore list and 👎 otherwise"""
+        if not isinstance(target, int):
+            target = target.id
+
+        reply = '👍' if target in self.bl_data else '👎'
+
+        await ctx.message.add_reaction(emoji=reply)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
