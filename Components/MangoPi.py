@@ -233,7 +233,7 @@ class MangoPi(commands.Bot):
         now = datetime.datetime.utcnow()
         print(f"{self._separator}\n\tBot Session Resumed\n{self._separator}")
 
-        if not self.last_dc and self.dc_report:
+        if (not self.last_dc) or (not self.dc_report):
             return
 
         targets = self.data.get_report_channels()
