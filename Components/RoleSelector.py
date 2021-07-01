@@ -91,29 +91,22 @@ class RoleSelector:
 
     async def organize_reactions(self, safe: int):
         """
-        Async method that reorganizes reaction within a target message
+        Async method that removes reaction of users no longer in the guild. A lot of API calls
 
         Parameters
         ----------
         safe: int
-            bot's ID
+            bot ID to ignore
         """
         if not self.message or not self.active:
             return
 
         for reaction in self.message.reactions:
-            try:
-                role = self.emote_to_role[reaction.emoji]
-            except KeyError:
-                pass
-            else:
-                async for i in reaction.users():
-                    if i.id != safe:
-                        if isinstance(i, discord.User):
-                            await reaction.remove(i)
-                        else:
-                            if role not in i.roles:
-                                await reaction.remove(i)
+            async for i in reaction.users():
+                if i.id != safe:
+                    if isinstance(i, discord.User):
+                        # not longer part of the server
+                        await reaction.remove(i)
 
     def __contains__(self, item: typing.Union[discord.Emoji, discord.Role, str]):
         """
@@ -184,22 +177,20 @@ class RoleSelector:
             raise ValueError("Role not found with the given reaction")
         contains = role in target.roles
 
-        if self.multiple:
-            await target.add_roles(role, reason=f"{self.name} Role Menu [Multiple], role request")
-        else:
+        temp = "Multiple" if self.multiple else "Single"
+        await target.add_roles(role, reason=f"{self.name} Role Menu [{temp}], role request")
+
+        if not self.multiple:
             if not contains:
                 await target.add_roles(role, reason=f"{self.name} Role Menu [Single], role request")
+
             remove_roles = []
-            remove_emotes = []
             for k, v in self.emote_to_role.items():
                 if v in target.roles and v != role:
                     remove_roles.append(v)
-                    remove_emotes.append(k)
 
-            if self.message:
-                for i in remove_emotes:
-                    await self.message.remove_reaction(i, target)
-            await target.remove_roles(*remove_roles, reason=f"{self.name} Role Menu [Single], excess role removal")
+            if len(remove_roles) > 0:
+                await target.remove_roles(*remove_roles, reason=f"{self.name} Role Menu [Single], excess role removal")
 
     async def remove_roles(self, emote: typing.Union[discord.Emoji, str], target: discord.Member):
         """
@@ -225,4 +216,5 @@ class RoleSelector:
         except KeyError:
             raise ValueError("Role not found with the given emote")
 
-        await target.remove_roles(role, reason=f"{self.name} Role Menu, role removal request")
+        if role in target.roles:
+            await target.remove_roles(role, reason=f"{self.name} Role Menu, role removal request")

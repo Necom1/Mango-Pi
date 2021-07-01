@@ -335,6 +335,8 @@ class MangoPi(commands.Bot):
             except (discord.HTTPException, discord.Forbidden):
                 pass
             return
+        if isinstance(error, discord.Forbidden):
+            return ctx.reply("Missing permission to do so", delete_after=10)
 
         print(f"{Colors.WARNING}{ctx.channel} > {ctx.author} : {ctx.message.content}{Colors.END}")
 

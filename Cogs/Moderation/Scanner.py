@@ -672,7 +672,7 @@ class Scanner(commands.Cog):
                     array.append(temp.mention)
                 else:
                     err.append(f"{i} -\t{kind}")
-            e.add_field(name=f"**{len(data.users)}** {kind}", value="\n".join(array))
+            e.add_field(name=f"**{len(ins)}** {kind}", value="\n".join(array))
 
         if len(data.users) + len(data.channels) + len(data.roles) == 0:
             embed.description = "Empty"

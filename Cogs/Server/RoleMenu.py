@@ -454,6 +454,7 @@ class RoleMenu(commands.Cog):
             member = payload.member
             if member.bot:
                 return
+
             try:
                 temp = payload.emoji.name if payload.emoji.is_unicode_emoji() else self.bot.get_emoji(payload.emoji.id)
                 await data.add_roles(temp, member)
