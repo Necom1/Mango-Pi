@@ -314,7 +314,7 @@ class Logging(commands.Cog):
                f"💬|=> {y if data.data['vc_update'] else n} |=>Display member joining, moving, leaving voice chat"
         embed = discord.Embed(
             colour=0xfdcb6e,
-            title=f"Reaction to change what log will the bot send in this channel",
+            title=f"React to change what log will the bot send in this channel",
             description=temp
         )
         embed.set_author(name=f"{channel} log settings")
@@ -329,9 +329,8 @@ class Logging(commands.Cog):
                 await message.add_reaction(emoji=i)
 
         def check(reaction1: discord.Reaction, user1: discord.User):
-            if (reaction1.message.id == message.id) and (user1.id == original_author.id):
-                if str(reaction1.emoji) in self.reactions:
-                    return True
+            return (reaction1.message.id == message.id) and (user1.id == original_author.id) and \
+                   str(reaction1.emoji) in self.reactions
 
         try:
             reaction, user = await self.bot.wait_for('reaction_add', timeout=30, check=check)

@@ -24,3 +24,9 @@ def teardown(bot: commands.Bot):
 class Test(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+
+    @commands.command()
+    @commands.check(is_admin)
+    async def er(self, ctx: commands.Context):
+        """raises error to test"""
+        raise Exception("LOL")

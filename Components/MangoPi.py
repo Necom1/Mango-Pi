@@ -227,7 +227,7 @@ class MangoPi(commands.Bot):
 
             self._first_ready = False
 
-            for i in self.data.get_report_channels():
+            for i in self.data.get_report_channels(common=True):
                 await i.send("I am ready! 👌")
 
     async def on_resumed(self):
@@ -241,7 +241,7 @@ class MangoPi(commands.Bot):
         if (not self.last_dc) or (not self.dc_report):
             return
 
-        targets = self.data.get_report_channels()
+        targets = self.data.get_report_channels(common=True)
 
         embed = discord.Embed(title="Bot Session Resumed", colour=0x1dd1a1, timestamp=now)
         embed.set_footer(text="Resumed ")
@@ -287,7 +287,7 @@ class MangoPi(commands.Bot):
         if event_method in safe:
             return
 
-        targets = self.data.get_report_channels()
+        targets = self.data.get_report_channels(error=True)
         mes = split_string(f"{traceback.format_exc()}", 1900)
         count = 1
         for i in targets:
@@ -340,7 +340,7 @@ class MangoPi(commands.Bot):
 
         print(f"{Colors.WARNING}{ctx.channel} > {ctx.author} : {ctx.message.content}{Colors.END}")
 
-        targets = self.data.get_report_channels()
+        targets = self.data.get_report_channels(error=True)
 
         if len(targets) > 0:
             try:
@@ -360,4 +360,6 @@ class MangoPi(commands.Bot):
                     count += 1
 
         await ctx.message.add_reaction(emoji='⚠')
-        raise error
+        # https://github.com/Rapptz/discord.py/blob/master/discord/ext/commands/bot.py
+        print(f'Ignoring exception in command {ctx.command}:', file=sys.stderr)
+        traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)

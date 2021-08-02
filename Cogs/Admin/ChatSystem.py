@@ -161,6 +161,7 @@ class ChatSystem(commands.Cog):
 
     @commands.command(aliases=['msg'])
     async def message_bot_admins(self, ctx: commands.Context, *, m: str = ""):
+        """Command to send a message to bot admins"""
         channel_check = isinstance(ctx.channel, discord.TextChannel)
         check_id = ctx.channel.id if channel_check else ctx.author.id
 
@@ -168,25 +169,24 @@ class ChatSystem(commands.Cog):
             # the chat is currently being focused on, no need to send dup
             return
 
-        print(ctx.channel.id)
-        print(self.bl_data)
-
         if ctx.author.id in self.bl_data:
             return
         if ctx.channel.id in self.bl_data:
             return
 
         if len(ctx.message.attachments) < 1 and m == "":
-            return await ctx.send("W-What am I sending...?")
+            return await ctx.reply("W-What am I sending...?")
 
         original = embed_message(self.bot, ctx.message)
-        destinations = self.bot.data.get_report_channels()
+        destinations = self.bot.data.get_report_channels(chat=True)
         extra = f"in {ctx.channel.mention} ({ctx.channel.id})" if channel_check else \
             f"from {ctx.author.mention} ({ctx.author.id})'s DM"
 
         for a in original:
             for i in destinations:
                 await i.send(f"**From** `message_bot_admins` command {extra}", embed=a)
+
+        await ctx.message.add_reaction(emoji='📨')
 
     @commands.command()
     @commands.check(is_admin)
@@ -380,7 +380,7 @@ class ChatSystem(commands.Cog):
 
             if check_id in self.data:
                 original = embed_message(self.bot, message)
-                destinations = self.bot.data.get_report_channels()
+                destinations = self.bot.data.get_report_channels(chat=True)
 
                 for a in original:
                     for i in destinations:

@@ -91,19 +91,34 @@ class BotConfig(commands.Cog):
         Group command for log report, no sub-command invoke will bring up list of channels and user to report to.
         """
         if not ctx.invoked_subcommand:
-            dm = [f"<@!{i}>" for i in self.bot.data.log_report_channels["dm"]]
-            channels = [f"<#{i}>" for i in self.bot.data.log_report_channels["channel"]]
+            temp = self.bot.data.console_data()
+
+            dm, channels = [], []
+
+            emotes = ('🤖', '💬', '⚠')
+
+            for k, v in temp.items():
+
+                result = ''
+                for z in range(1, 4):
+                    result += emotes[z-1] if v[z] else '🔴'
+                if v[0]:
+                    channels.append(f"{result} <#{k}>")
+                else:
+                    dm.append(f"{result} <@!{k}>")
 
             embed = discord.Embed(
-                title="Log Report to",
+                title="Bot Consoles",
                 colour=0x6c5ce7,
                 timestamp=ctx.message.created_at
             )
 
             if len(dm) > 0:
-                embed.add_field(inline=False, name="DM User", value="\n".join(dm))
+                temp = "\n".join(dm)
+                embed.add_field(inline=False, name="DMs", value=temp)
             if len(channels) > 0:
-                embed.add_field(inline=False, name="Console Channels", value="\n".join(channels))
+                temp = "\n".join(channels)
+                embed.add_field(inline=False, name="Text Chats", value=temp)
 
             await ctx.reply(embed=embed)
 
@@ -113,27 +128,85 @@ class BotConfig(commands.Cog):
         if not new:
             new = ctx.author if not ctx.guild else ctx.channel
 
-        try:
-            self.bot.data.add_console(new)
-        except ValueError:
+        if not self.bot.data.is_in_console(new):
+            self.bot.data.modify_console(new, [False, False, False])
+        else:
             return await ctx.reply(f"{new.mention} is already within the log report list")
 
         await ctx.message.add_reaction(emoji="✅")
 
-    @log_report.command(aliases=["-"])
-    async def remove(self, ctx: commands.Context, exist: typing.Union[discord.User, discord.TextChannel, int] = None):
-        """
-        log_report sub-command for removing an existing user or channel from log report list base on passed in types.
-        """
+    @log_report.command(aliases=['m'])
+    async def modify(self, ctx: commands.Context, exist: typing.Union[discord.User, discord.TextChannel, int] = None):
+        """log_report sub-command for modifying an existing console channel"""
         if not exist:
             exist = ctx.author if not ctx.guild else ctx.channel
 
-        try:
-            self.bot.data.remove_console(exist)
-        except ValueError:
-            return await ctx.reply(f"{exist.mention} not found within the log report list")
+        data = self.bot.data.console_data(exist if isinstance(exist, int) else exist.id)
+        if not data:
+            return await ctx.reply("Can not find the specified target")
 
-        await ctx.message.add_reaction(emoji="🗑️")
+        temp = f"🤖 |=> {'🟢' if data[1] else '🔴'} |=> Normal Bot Status Reports\n" \
+               f"💬 |=> {'🟢' if data[2] else '🔴'} |=> Chat Messages\n" \
+               f"⚠ |=> {'🟢' if data[3] else '🔴'} |=> Errors"
+
+        embed = discord.Embed(
+            color=ctx.author.colour,
+            title="React to modify",
+            description=temp
+        )
+        embed.set_author(name=f"{exist} console settings")
+        embed.add_field(name="Freezing", value="reacting with '⏸' will freeze this menu")
+        embed.set_footer(text=f"react with '❌' to delete {exist} console")
+
+        msg = await ctx.reply(embed=embed)
+        reactions = ('🤖', '💬', '⚠', '⏸', '❌')
+
+        for i in reactions:
+            await msg.add_reaction(emoji=i)
+
+        def check(reaction1: discord.Reaction, user1: discord.User):
+            return (reaction1.message.id == msg.id) and (user1.id == ctx.author.id) and \
+                   str(reaction1.emoji) in reactions
+
+        try:
+            reaction, user = await self.bot.wait_for('reaction_add', timeout=30, check=check)
+        except asyncio.TimeoutError:
+            await msg.edit(embed=None, content=f"**{exist}** console setting menu timed out ⏱")
+            await msg.clear_reactions()
+        else:
+            if reaction.emoji == '❌':
+                try:
+                    self.bot.data.remove_console(exist)
+                    await msg.edit(content="Deleted!", embed=None)
+                except ValueError:
+                    await msg.edit(content=f"{exist.mention} not found within the log report list", embed=None)
+            elif reaction.emoji == '⏸':
+                embed.remove_field(0)
+                embed.set_footer(text="Frozen")
+                embed.title = None
+                embed.timestamp = msg.created_at
+                await msg.edit(embed=embed)
+            else:
+                temp = ('🤖', '💬', '⚠')  # + 1 for original index
+                try:
+                    update = temp.index(reaction.emoji)
+                except ValueError:
+                    await msg.edit(content="Unknown reaction applied, operation terminated.", embed=None)
+                else:
+                    data[update+1] = not data[update+1]
+                    self.bot.data.modify_console(exist, [data[1], data[2], data[3]])
+                    temp = f"🤖 |=> {'🟢' if data[1] else '🔴'} |=> Normal Bot Status Reports\n" \
+                           f"💬 |=> {'🟢' if data[2] else '🔴'} |=> Chat Messages\n" \
+                           f"⚠ |=> {'🟢' if data[3] else '🔴'} |=> Errors"
+                    embed.description = temp
+                    embed.remove_field(0)
+                    embed.set_footer(text="Updated")
+                    embed.title = None
+                    embed.timestamp = msg.created_at
+                    await msg.edit(embed=embed)
+
+            await msg.clear_reactions()
+        # TODO finish this (merge remove?)
 
     @commands.group(aliases=["sa"])
     @commands.check(is_admin)

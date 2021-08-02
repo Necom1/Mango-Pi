@@ -10,13 +10,6 @@ import subprocess
 # https://flatuicolors.com/
 # https://discordpy.readthedocs.io/
 
-checks = [
-    "pytz",
-    "pymongo",
-    "requests",
-    "discord.py[voice]"
-]
-
 try:
     import pytz
     import requests
@@ -24,9 +17,7 @@ try:
     import pymongo
 except ImportError:
     print("Missing installation detected, will now attempt to manually install libraries")
-    for i in checks:
-        # code reference: https://stackoverflow.com/questions/12332975/installing-python-module-within-code
-        subprocess.check_call([sys.executable, "-m", "pip", "install", i])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
 
 try:
     from Components.MangoPi import MangoPi

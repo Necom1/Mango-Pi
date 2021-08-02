@@ -1,4 +1,0 @@
-pytz
-pymongo
-requests
-discord.py[voice]>=1.7.1
