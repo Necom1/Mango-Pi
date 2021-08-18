@@ -29,7 +29,7 @@ def teardown(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to unload the Cog
     """
-    bot.remove_cog("Test")
+    bot.remove_cog("Reminder")
     print("Unload Cog:\tReminder")
 
 
