@@ -16,6 +16,8 @@ try:
     import requests
     import discord
     import pymongo
+    import wavelink
+    import yaml
 except ImportError:
     print("Missing installation detected, will now attempt to manually install libraries")
     subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
