@@ -2,3 +2,5 @@ pytz
 pymongo
 requests
 discord.py[voice]>=1.7.3
+pyyaml
+wavelink

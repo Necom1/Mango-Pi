@@ -60,13 +60,26 @@ class Normal(commands.Cog):
             discord.VerificationLevel.extreme: "Can I have your number? 📱"
         }
 
+    async def cog_check(self, ctx: commands.Context):
+        """
+        Async method that does the command check before running
+
+        Parameters
+        ----------
+        ctx: commands.Context
+            pass in context to check
+
+        Returns
+        -------
+        bool
+            whether or not to run commands within this Cog
+        """
+        return not self.bot.ignore_check(ctx)
+
     # get bot connection command
     @commands.command(aliases=["connection"])
     async def ping(self, ctx: commands.Context):
         """Checks bot's Discord connection ping and process ping."""
-        if self.bot.ignore_check(ctx):
-            return
-
         # Reference: https://stackoverflow.com/questions/46307035/ping-command-with-discord-py
         before = time.monotonic()
         message = await ctx.reply(":ping_pong:")
@@ -98,9 +111,6 @@ class Normal(commands.Cog):
     @commands.command(aliases=["pfp"])
     async def avatar(self, ctx: commands.Context, target: discord.Member = None):
         """Return the avatar of the target user."""
-        if self.bot.ignore_check(ctx):
-            return
-
         person = ctx.author if not target else target
 
         link = person.avatar_url
@@ -117,17 +127,12 @@ class Normal(commands.Cog):
     @commands.command()
     async def utc(self, ctx: commands.Context):
         """Return the current UTC time."""
-        if self.bot.ignore_check(ctx):
-            return
         await ctx.reply(datetime.datetime.utcnow().strftime("UTC Time:\n`%B %#d, %Y`\n%I:%M:%S %p"))
 
     # get user info
     @commands.command(aliases=["userinfo", "uinfo"])
     async def user_info(self, ctx: commands.Context, member: typing.Union[discord.Member, discord.User, int, None]):
         """Returns information of the target user."""
-        if self.bot.ignore_check(ctx):
-            return
-
         admin = self.bot.data.staff_check(ctx)
 
         if isinstance(member, int) and admin:
@@ -189,9 +194,6 @@ class Normal(commands.Cog):
     @commands.guild_only()
     async def server_banner(self, ctx: commands.Context):
         """Returns the server banner if any."""
-        if self.bot.ignore_check(ctx):
-            return
-
         if not ctx.guild.banner:
             await ctx.reply("This server don't have a banner 😢")
         else:
@@ -206,9 +208,6 @@ class Normal(commands.Cog):
     @commands.guild_only()
     async def server_icon(self, ctx: commands.Context):
         """Returns the server icon."""
-        if self.bot.ignore_check(ctx):
-            return
-
         await ctx.reply(embed=discord.Embed(
             colour=0xecf0f1,
             title=f"Server Icon for {ctx.guild}",
@@ -220,9 +219,6 @@ class Normal(commands.Cog):
     @commands.guild_only()
     async def server_splash(self, ctx: commands.Context):
         """Return server's join splash screen if any."""
-        if self.bot.ignore_check(ctx):
-            return
-
         if ctx.guild.splash is None:
             await ctx.reply("This server don't have a invite splash screen 😢")
         else:
@@ -237,9 +233,6 @@ class Normal(commands.Cog):
     @commands.guild_only()
     async def server_info(self, ctx: commands.Context):
         """Return an embed of basic server information."""
-        if self.bot.ignore_check(ctx):
-            return
-
         server = ctx.guild
         temp = server.premium_tier
 
@@ -293,9 +286,6 @@ class Normal(commands.Cog):
     @commands.command(aliases=['ei'])
     async def emote_info(self, ctx: commands.Context):
         """Sends a message for User to react and return either emote ID or str of that emote."""
-        if self.bot.ignore_check(ctx):
-            return
-
         message = await ctx.reply("React to this message")
 
         def check(reaction1, user1):
@@ -316,9 +306,6 @@ class Normal(commands.Cog):
     @commands.guild_only()
     async def list_emotes(self, ctx: commands.Context):
         """Return an embed of server's emote list."""
-        if self.bot.ignore_check(ctx):
-            return
-
         emotes = ctx.guild.emojis
         if len(emotes) <= 0:
             return await ctx.reply("This server don't have any emotes.")
@@ -362,9 +349,6 @@ class Normal(commands.Cog):
     @commands.command(aliases=["binfo"])
     async def info(self, ctx: commands.Context):
         """Returns information about this bot."""
-        if self.bot.ignore_check(ctx):
-            return
-
         embed = discord.Embed(
             colour=0x48dbfb,
             title="I am a discord bot filled with random features! I am made using Python and implements MongoDB!"
@@ -381,6 +365,6 @@ class Normal(commands.Cog):
                         value=f"{creator.mention} / [Necom1](https://github.com/Necom1)", inline=False)
         embed.add_field(name="I am born on", value=self.bot.user.created_at.strftime("%#d %B %Y, %I:%M %p UTC"))
 
-        embed.set_footer(text="v 0.9 | Beta", icon_url="https://i.imgur.com/RPrw70n.jpg")
+        embed.set_footer(text="v 1.2", icon_url="https://i.imgur.com/RPrw70n.jpg")
 
         await ctx.reply(embed=embed)

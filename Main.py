@@ -1,4 +1,5 @@
 import sys
+import time
 import subprocess
 
 
@@ -21,7 +22,12 @@ except ImportError:
 
 try:
     from Components.MangoPi import MangoPi
+
+    laval = subprocess.Popen(['java', '-jar', 'Lavalink.jar'])
+    time.sleep(10)
     MangoPi()
+    # clean up subprocess
+    laval.kill()
 except ConnectionRefusedError:
     print("Bot has failed to connect to the specified MongoDB")
     print("- Go into the Bot Settings Folder and check keys.json and see if there is any spelling error")

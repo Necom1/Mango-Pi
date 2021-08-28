@@ -86,11 +86,25 @@ class Reminder(commands.Cog):
         for i in late_reminders:
             asyncio.get_event_loop().create_task(dm_remind(self.bot, i['user_id'], i['details'], True))
 
+    async def cog_check(self, ctx: commands.Context):
+        """
+        Async method that does the command check before running
+
+        Parameters
+        ----------
+        ctx: commands.Context
+            pass in context to check
+
+        Returns
+        -------
+        bool
+            whether or not to run commands within this Cog
+        """
+        return not self.bot.ignore_check(ctx)
+
     @commands.command(aliases=['remindme'])
     async def remind_me(self, ctx: commands.Context, time: str, *, remind: str = ""):
         """Commands that sets reminder for user. Maximum of 10 reminders."""
-        if self.bot.ignore_check(ctx):
-            return
         if len(remind) == 0:
             return await ctx.reply("Please input remind detail.")
         if len(remind) > 500:
@@ -116,8 +130,6 @@ class Reminder(commands.Cog):
     @commands.group(aliases=['reminders'])
     async def reminder(self, ctx: commands.Context):
         """Group command that will list all the reminders if not additional sub-command are received."""
-        if self.bot.ignore_check(ctx):
-            return
         if not ctx.invoked_subcommand:
             try:
                 data = self.memory[ctx.author.id]
@@ -140,8 +152,6 @@ class Reminder(commands.Cog):
     @reminder.command(aliases=['-'])
     async def remove(self, ctx: commands.Context, reminder_id: int):
         """Sub-command of reminder that removes a reminder base on it's ID."""
-        if self.bot.ignore_check(ctx):
-            return
         try:
             data = self.memory[ctx.author.id][reminder_id]
         except KeyError:
