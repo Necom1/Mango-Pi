@@ -351,7 +351,7 @@ class Normal(commands.Cog):
         """Returns information about this bot."""
         embed = discord.Embed(
             colour=0x48dbfb,
-            title="I am a discord bot filled with random features! I am made using Python and implements MongoDB!"
+            title="I am a discord bot filled with random features! I am made using Pycord and MongoDB!"
         )
         embed.set_author(name=f"Hi! I am {self.bot.user.name}!",
                          icon_url="https://icons.iconarchive.com/icons/cornmanthe3rd/plex/128/Other-python-icon.png")

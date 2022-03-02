@@ -133,7 +133,7 @@ class Lockdown(commands.Cog):
         await ctx.message.add_reaction(emoji='👍')
 
     @commands.command()
-    @commands.has_permissions(manage_channels=True)
+    @commands.has_permissions(manage_messages=True)
     async def lock(self, ctx: commands.Context, text: commands.Greedy[discord.TextChannel],
                    vc: commands.Greedy[discord.VoiceChannel], *roles: discord.Role):
         """Locks a channel's send message perm for set or specified roles"""
@@ -144,7 +144,7 @@ class Lockdown(commands.Cog):
             self.cooldown.remove(ctx.guild.id)
 
     @commands.command()
-    @commands.has_permissions(manage_channels=True)
+    @commands.has_permissions(manage_messages=True)
     async def unlock(self, ctx: commands.Context, text: commands.Greedy[discord.TextChannel],
                      vc: commands.Greedy[discord.VoiceChannel], *roles: discord.Role):
         """Unlocks a channel's send message perm for set or specified roles"""

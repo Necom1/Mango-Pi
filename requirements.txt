@@ -1,6 +1,6 @@
 pytz
 pymongo
 requests
-discord.py[voice]>=1.7.3
+py-cord[voice]>=1.7.3
 pyyaml
-wavelink
+wavelink>=1.1.1
