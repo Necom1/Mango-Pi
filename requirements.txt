@@ -1,5 +1,5 @@
 pytz
-pymongo
+pymongo>=3.8
 requests
 py-cord[voice]>=1.7.3
 pyyaml
