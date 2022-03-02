@@ -86,7 +86,11 @@ class AntiRaid(commands.Cog):
             self.data.clear()
             data = self.db.find({})
             for i in data:
-                self.data.update({i['_id']: RaidFilter(self.bot, i)})
+                try:
+                    r = RaidFilter(self.bot, i)
+                    self.data[i['_id']] = r
+                except ValueError:
+                    self.db.delete_one({'_id': i['_id']})
 
     async def verify(self, ctx: commands.Context):
         """
