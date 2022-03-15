@@ -193,9 +193,7 @@ class Music(commands.Cog):
             await wavelink.NodePool.create_node(bot=self.bot,
                                                 host=link,
                                                 port=port,
-                                                password=opn['lavalink']['server']['password'],
-                                                identifier='MAIN',
-                                                region=discord.VoiceRegion.eu_west)
+                                                password=opn['lavalink']['server']['password'])
 
     @commands.group(aliases=['mp'])
     async def music_player(self, ctx: commands.Context):
@@ -216,7 +214,7 @@ class Music(commands.Cog):
             return
 
         if player.is_connected():
-            await player.move_to(channel.id)
+            await player.move_to(channel)
             player.channel_id = channel.id
         else:
             await player.connect(channel.id)

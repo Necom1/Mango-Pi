@@ -134,8 +134,7 @@ class MangoPi(commands.Bot):
             # code reference:
             # https://stackoverflow.com/questions/30539183/how-do-you-check-if-the-client-for-a-mongodb-instance-is-valid
             self.mongo = MongoClient(data.db_address)[data.cluster]
-            self.mongo.collection_names()
-            # pymongo 4: self.mongo.list_collection_names()
+            self.mongo.list_collection_names()
         except errors.ServerSelectionTimeoutError:
             raise ConnectionRefusedError("Can not connect to the specified MongoDB")
 

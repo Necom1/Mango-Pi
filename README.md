@@ -2,7 +2,7 @@
 [![](https://img.shields.io/badge/MangoPi-Invite-7289DA)](https://discord.com/oauth2/authorize?client_id=594781459001376768&scope=bot&permissions=1543892182)
 [![](https://img.shields.io/badge/License-MIT-00cec9)](https://choosealicense.com/licenses/mit/)
 
-Moderation Discord bot made with Pycord, MongoDB, and Lavalink.
+Moderation Discord bot made with Discord.py, MongoDB, and Lavalink.
 
 ---
 ### Software Requirements
@@ -10,7 +10,7 @@ Moderation Discord bot made with Pycord, MongoDB, and Lavalink.
 [![](https://img.shields.io/badge/MongoDB-Server-589636)](https://www.mongodb.com/try/download/community)
 [![](https://img.shields.io/badge/Java_JRE-13+-FB9820)](https://java.com/en/download/)
 ### Python Module Requirements
-* Pycord
+* Discord.py
 * PyMongo
 * requests
 * pytz
