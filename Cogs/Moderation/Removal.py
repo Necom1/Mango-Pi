@@ -8,7 +8,7 @@ from Components.TemporaryBan import TemporaryBan, ban_over
 from Components.MangoPi import highest_role_position, MangoPi
 
 
-def setup(bot: MangoPi):
+async def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
@@ -17,11 +17,11 @@ def setup(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to add Cog
     """
-    bot.add_cog(Removal(bot))
+    await bot.add_cog(Removal(bot))
     print("Load Cog:\tRemoval")
 
 
-def teardown(bot: MangoPi):
+async def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
@@ -30,7 +30,7 @@ def teardown(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to remove Cog
     """
-    bot.remove_cog("Removal")
+    await bot.remove_cog("Removal")
     print("Unload Cog:\tRemoval")
 
 
@@ -116,7 +116,7 @@ class Removal(commands.Cog):
                 mems += f"{i + 1}. {targets[i].mention}\n"
             embed.add_field(name="Pending Kicks", value=mems, inline=False)
             embed.add_field(name="Kick Reason", value=reason, inline=False)
-            embed.set_footer(icon_url=ctx.author.avatar_url_as(size=64),
+            embed.set_footer(icon_url=ctx.author.avatar.replace(size=64).url,
                              text=f"Kicking total of {len(targets)} members")
             message = await ctx.reply(embed=embed)
             for i in valid:
@@ -179,7 +179,7 @@ class Removal(commands.Cog):
                 title="👮 No Permission", colour=0x34ace0,
                 description='You will need the permission of [Kick Members] to use this command.'
             )
-            embed.set_footer(text=f"Input by {ctx.author}", icon_url=ctx.author.avatar_url)
+            embed.set_footer(text=f"Input by {ctx.author}", icon_url=ctx.author.avatar.replace(size=64).url)
             return await ctx.reply(embed=embed, delete_after=10)
         else:
             await ctx.reply("Unknown error has occurred, please try again later.", delete_after=10)
@@ -218,7 +218,7 @@ class Removal(commands.Cog):
                 mems += f"{i + 1}. {targets[i].mention}\n"
             embed.add_field(name="Pending Bans", value=mems, inline=False)
             embed.add_field(name="Ban Reason", value=reason, inline=False)
-            embed.set_footer(icon_url=ctx.author.avatar_url_as(size=64),
+            embed.set_footer(icon_url=ctx.author.avatar.replace(size=64).url,
                              text=f"Remove Messages from the past {delete_days} days")
             message = await ctx.reply(embed=embed)
             for i in valid:
@@ -392,7 +392,7 @@ class Removal(commands.Cog):
         embed = discord.Embed(
             timestamp=time,
             colour=color
-        ).set_author(icon_url=str(target.avatar_url_as(size=64)), name=title)
+        ).set_author(icon_url=str(target.avatar.replace(size=64).url), name=title)
         embed.add_field(name="Expected unban time: ", value=time.strftime('%B %#d, %Y | `%I:%M %p` UTC'))
         embed.set_footer(text="Unban ")
         await ctx.reply(embed=embed)
@@ -433,7 +433,7 @@ class Removal(commands.Cog):
         embed = discord.Embed(
             colour=0xa29bfe,
             timestamp=ctx.message.created_at
-        ).set_author(name="Temporary Ban List", icon_url=ctx.guild.icon_url)
+        ).set_author(name="Temporary Ban List", icon_url=ctx.guild.icon.replace(size=128).url)
         embed.set_footer(text=f"Page {page} / {total_page}")
 
         for i in range(start, end):
@@ -483,7 +483,7 @@ class Removal(commands.Cog):
                 title="👮 No Permission", colour=0x34ace0,
                 description='You will need the permission of [Ban Members] to use this command.'
             )
-            embed.set_footer(text=f"Input by {ctx.author}", icon_url=ctx.author.avatar_url)
+            embed.set_footer(text=f"Input by {ctx.author}", icon_url=ctx.author.avatar.replace(size=64).url)
             return await ctx.reply(embed=embed, delete_after=10)
         elif isinstance(error, discord.NotFound):
             return await ctx.reply("Can not find target user. Please double check the ID you entered.", delete_after=10)

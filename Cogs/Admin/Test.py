@@ -11,13 +11,13 @@ from Components.MangoPi import MangoPi, is_admin
 from Components.MessageTools import image_check
 
 
-def setup(bot: commands.Bot):
-    bot.add_cog(Test(bot))
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Test(bot))
     print("Load Cog:\tTest")
 
 
-def teardown(bot: commands.Bot):
-    bot.remove_cog("Test")
+async def teardown(bot: commands.Bot):
+    await bot.remove_cog("Test")
     print("Unload Cog:\tTest")
 
 

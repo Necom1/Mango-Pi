@@ -5,7 +5,7 @@ from Components.MangoPi import MangoPi
 from Components.RaidFilter import RaidFilter
 
 
-def setup(bot: MangoPi):
+async def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs. This will update AntiRaid's data from mongoDB.
 
@@ -14,11 +14,11 @@ def setup(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to add Cog
     """
-    bot.add_cog(AntiRaid(bot))
+    await bot.add_cog(AntiRaid(bot))
     print("Load Cog:\tAntiRaid")
 
 
-def teardown(bot: MangoPi):
+async def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
@@ -27,7 +27,7 @@ def teardown(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to remove Cog
     """
-    bot.remove_cog("AntiRaid")
+    await bot.remove_cog("AntiRaid")
     print("Unload Cog:\tAntiRaid")
 
 
@@ -307,7 +307,7 @@ class AntiRaid(commands.Cog):
                             f"😴 - Raid Timeout: {data.timeout} seconds \n"
                             f"📛 - Raider Role: " + (f"{de_role.mention}" if de_role else "**Error!!**") + "\n"
                             f"⏸ - Setting Menu Pause"
-            ).set_footer(text="React to Modify", icon_url=self.bot.user.avatar_url_as(size=128))
+            ).set_footer(text="React to Modify", icon_url=self.bot.user.avatar.replace(size=128).url)
             msg = await ctx.reply(embed=embed)
             for i in emotes:
                 await msg.add_reaction(emoji=i)
@@ -315,7 +315,7 @@ class AntiRaid(commands.Cog):
                 reaction, user = await self.bot.wait_for('reaction_add', timeout=10, check=check)
             except asyncio.TimeoutError:
                 await msg.edit(embed=embed.set_footer(text="Menu Timed Out",
-                                                      icon_url=self.bot.user.avatar_url_as(size=64)))
+                                                      icon_url=self.bot.user.avatar.replace(size=64).url))
                 return await msg.clear_reactions()
             await msg.clear_reactions()
 
@@ -324,7 +324,7 @@ class AntiRaid(commands.Cog):
 
             if reaction.emoji == '⏸':
                 await msg.edit(
-                    embed=embed.set_footer(text="Menu Paused", icon_url=self.bot.user.avatar_url_as(size=64)))
+                    embed=embed.set_footer(text="Menu Paused", icon_url=self.bot.user.avatar.replace(size=64).url))
             elif reaction.emoji == "💡":
                 result = data.toggle()
                 await msg.edit(embed=None, content="Anti-Raid now enabled" if result else "Anti-Raid now disabled")

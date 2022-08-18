@@ -26,7 +26,7 @@ def split_string(line: str, n: int):
     return [line[i:i + n] for i in range(0, len(line), n)]
 
 
-def setup(bot: MangoPi):
+async def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs. This will update Logging's data from mongoDB.
 
@@ -35,11 +35,11 @@ def setup(bot: MangoPi):
     bot : commands.Bot
         pass in bot reference to add Cog
     """
-    bot.add_cog(Logging(bot))
+    await bot.add_cog(Logging(bot))
     print("Load Cog:\tLogging")
 
 
-def teardown(bot: commands.Bot):
+async def teardown(bot: commands.Bot):
     """
     Function to be called upon unloading this Cog.
 
@@ -48,7 +48,7 @@ def teardown(bot: commands.Bot):
     bot : commands.Bot
         pass in bot reference to remove Cog and restore command_prefix
     """
-    bot.remove_cog("Logging")
+    await bot.remove_cog("Logging")
     print("Unload Cog:\tLogging")
 
 
@@ -202,7 +202,7 @@ class Logging(commands.Cog):
                                   "log channel")
             embed.add_field(name="s (channel mention)",
                             value="Opens up the setting menu for the mentioned or current channel.")
-            embed.set_footer(icon_url=self.bot.user.avatar_url_as(size=64),
+            embed.set_footer(icon_url=self.bot.user.avatar.replace(size=64).url,
                              text="Now do the lc command followed by one of the above")
 
             await ctx.reply(embed=embed)
@@ -488,7 +488,7 @@ class Logging(commands.Cog):
             return
 
         embed = discord.Embed(colour=embed_stuff[label][0], timestamp=now, description=embed_stuff[label][1])
-        embed.set_footer(icon_url=member.avatar_url_as(size=64), text=label)
+        embed.set_footer(icon_url=member.avatar.replace(size=64).url, text=label)
 
         for i in data:
             if i.data['vc_update']:
@@ -526,8 +526,8 @@ class Logging(commands.Cog):
             timestamp=member.joined_at,
             description=f"{member.mention} ➡ **{member.guild}**"
         )
-        embed.set_thumbnail(url=member.avatar_url)
-        embed.set_author(name="New member!", icon_url=member.guild.icon_url)
+        embed.set_thumbnail(url=member.avatar.url)
+        embed.set_author(name="New member!", icon_url=member.guild.icon.replace(size=64).url)
         embed.add_field(name="User ID", value=member.id)
         embed.add_field(name="Account Birthday", value=member.created_at.strftime("%#d %B %Y, %I:%M %p UTC"))
         temp = member.joined_at - member.created_at
@@ -540,7 +540,7 @@ class Logging(commands.Cog):
         temp = "{years:02d} years {days:02d} days {hours:02d} hours {minutes:02d} " \
                "minutes {seconds:02d} seconds".format(**vars())
         embed.add_field(name="Account Age", value=temp, inline=False)
-        url = self.bot.user.avatar_url_as(size=64)
+        url = self.bot.user.avatar.replace(size=64).url
         if seconds <= 1:
             embed.set_footer(icon_url=url, text="Hi! You joining the server with a test account?")
         elif hours <= 1:
@@ -580,8 +580,8 @@ class Logging(commands.Cog):
             timestamp=time,
             description=f"{member.mention} ⬅ **{member.guild}**"
         )
-        embed.set_thumbnail(url=member.avatar_url)
-        embed.set_author(name="Someone left...", icon_url=member.guild.icon_url)
+        embed.set_thumbnail(url=member.avatar.url)
+        embed.set_author(name="Someone left...", icon_url=member.guild.icon.replace(size=64).url)
         embed.add_field(name="User ID", value=member.id)
         embed.add_field(name="Leave Time",
                         value=time.strftime("%#d %B %Y, %I:%M %p UTC"))
@@ -601,8 +601,8 @@ class Logging(commands.Cog):
                 timestamp=entry.created_at,
                 description=f"**{entry.target.name}** got drop kicked out of **{member.guild}**!"
             )
-            kicked.set_thumbnail(url=member.avatar_url)
-            kicked.set_author(name="👢 Booted!", icon_url=member.guild.icon_url)
+            kicked.set_thumbnail(url=member.avatar.url)
+            kicked.set_author(name="👢 Booted!", icon_url=member.guild.icon.replace(size=64).url)
             kicked.set_footer(text="Kicked")
             kicked.add_field(inline=False, name="Kicked by:", value=entry.user.mention)
             kicked.add_field(inline=False, name="Reason:", value=entry.reason)
@@ -655,7 +655,7 @@ class Logging(commands.Cog):
         )
         embed.set_footer(text="Banned")
         embed.set_thumbnail(url=user.avatar_url)
-        embed.set_author(name="🔨 Banned!", icon_url=guild.icon_url)
+        embed.set_author(name="🔨 Banned!", icon_url=guild.icon.replace(size=64).url)
         embed.add_field(name="User ID", value=user.id)
 
         if entry:
@@ -702,8 +702,8 @@ class Logging(commands.Cog):
                     description=f"Don't lose hope just yet **{user.name}**! Stay determined!"
                 )
                 embed.set_footer(text="Unbanned")
-                embed.set_thumbnail(url=user.avatar_url)
-                embed.set_author(name="✝ Unbanned!", icon_url=guild.icon_url)
+                embed.set_thumbnail(url=user.avatar.url)
+                embed.set_author(name="✝ Unbanned!", icon_url=guild.icon.replace(size=64).url)
                 embed.add_field(inline=False, name="Unbanned by:", value=entry.user.mention)
                 embed.add_field(inline=False, name="Reason:", value=entry.reason)
                 embed.add_field(name="User ID", value=user.id)
@@ -750,7 +750,7 @@ class Logging(commands.Cog):
                 colour=0x9980FA,
                 description=after.mention
             )
-            embed.set_author(name="✍ Nickname change!", icon_url=after.avatar_url)
+            embed.set_author(name="✍ Nickname change!", icon_url=after.avatar.replace(size=64).url)
             if before.nick:
                 embed.add_field(name="Before", value=before.nick, inline=False)
             if after.nick:
@@ -805,7 +805,7 @@ class Logging(commands.Cog):
                     timestamp=datetime.datetime.utcnow(),
                     description=after.mention
                 )
-                embed.set_author(name="✍ Username change!", icon_url=after.avatar_url)
+                embed.set_author(name="✍ Username change!", icon_url=after.avatar.replace(size=64).url)
                 embed.add_field(name="Before", value=before.display_name, inline=False)
                 embed.add_field(name="Now", value=after.display_name, inline=False)
 

@@ -6,7 +6,7 @@ from Components.MangoPi import MangoPi
 from Components.AutoRole import AutoRole
 
 
-def setup(bot: MangoPi):
+async def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
@@ -15,11 +15,11 @@ def setup(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to add Cog
     """
-    bot.add_cog(JoinRole(bot))
+    await bot.add_cog(JoinRole(bot))
     print("Load Cog:\tJoinRole")
 
 
-def teardown(bot: MangoPi):
+async def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
@@ -28,7 +28,7 @@ def teardown(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to remove Cog
     """
-    bot.remove_cog("JoinRole")
+    await bot.remove_cog("JoinRole")
     print("Unload Cog:\tJoinRole")
 
 

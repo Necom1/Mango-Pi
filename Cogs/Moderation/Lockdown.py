@@ -4,7 +4,7 @@ from discord.ext import commands
 from Components.MangoPi import MangoPi
 
 
-def setup(bot: MangoPi):
+async def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs. This will update Lockdown's data from mongoDB.
 
@@ -13,11 +13,11 @@ def setup(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to add Cog
     """
-    bot.add_cog(Lockdown(bot))
+    await bot.add_cog(Lockdown(bot))
     print("Load Cog:\tLockdown")
 
 
-def teardown(bot: MangoPi):
+async def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
@@ -26,7 +26,7 @@ def teardown(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to remove Cog
     """
-    bot.remove_cog("Lockdown")
+    await bot.remove_cog("Lockdown")
     print("Unload Cog:\tLockdown")
 
 

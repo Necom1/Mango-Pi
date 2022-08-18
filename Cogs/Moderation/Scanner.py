@@ -8,7 +8,7 @@ from Components.Detector import Detector
 from Components.DelayedTask import range_calculator
 
 
-def setup(bot: MangoPi):
+async def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
@@ -17,11 +17,11 @@ def setup(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to add Cog
     """
-    bot.add_cog(Scanner(bot))
+    await bot.add_cog(Scanner(bot))
     print("Load Cog:\tScanner")
 
 
-def teardown(bot: MangoPi):
+async def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
@@ -30,7 +30,7 @@ def teardown(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to remove Cog
     """
-    bot.remove_cog("Scanner")
+    await bot.remove_cog("Scanner")
     print("Unload Cog:\tScanner")
 
 
@@ -220,8 +220,8 @@ class Scanner(commands.Cog):
                     timestamp=now,
                     description=f"Having **{reason}** in your nickname isn't allowed here.",
                     colour=0xf1c40f
-                ).set_footer(icon_url=str(after.avatar_url_as(size=64))).set_author(icon_url=guild.icon_url,
-                                                                                    name=f"{guild.name}")
+                ).set_footer(icon_url=str(after.avatar.replace(size=64).url)).set_author(icon_url=guild.icon.replace(size=64).url, 
+                                                                                         name=f"{guild.name}")
                 try:
                     await after.send("⚠ Auto Warn ⚠", embed=embed)
                 except discord.HTTPException:
@@ -249,14 +249,14 @@ class Scanner(commands.Cog):
                 timestamp=datetime.datetime.utcnow(),
                 description=after.mention
             )
-            embed.set_author(icon_url=after.avatar_url, name="🚨 Bad Name on Join ⚠")
+            embed.set_author(icon_url=after.avatar.replace(size=64).url, name="🚨 Bad Name on Join ⚠")
         elif scan_nick:
             embed = discord.Embed(
                 colour=0xF79F1F,
                 timestamp=now,
                 description=after.mention
             )
-            embed.set_author(icon_url=after.avatar_url, name="🚨 Bad Nickname!")
+            embed.set_author(icon_url=after.avatar.replace(size=64).url, name="🚨 Bad Nickname!")
         else:
             if special:
                 return True
@@ -265,7 +265,7 @@ class Scanner(commands.Cog):
                 timestamp=now,
                 description=after.mention
             )
-            embed.set_author(icon_url=after.avatar_url, name="🚨 Bad Username!")
+            embed.set_author(icon_url=after.avatar.replace(size=64).url, name="🚨 Bad Username!")
         embed.add_field(inline=False, name="Problematic Words", value=string)
         for i in channels:
             if i.data['trigger']:
@@ -384,7 +384,7 @@ class Scanner(commands.Cog):
             await message.edit(embed=None, content=f"auto warn for `{name}` is now " + ("on" if data.delete else "off"))
         elif reaction.emoji == '⏸':
             embed.remove_field(6)
-            embed.set_footer(text="Setting menu paused", icon_url=self.bot.user.avatar_url_as(size=64))
+            embed.set_footer(text="Setting menu paused", icon_url=self.bot.user.avatar.replace(size=64).url)
             await message.clear_reactions()
             return await message.edit(embed=embed)
         else:
@@ -922,8 +922,8 @@ class Scanner(commands.Cog):
                     timestamp=message.created_at,
                     description=f"Use of **{reason}** are banned. Go wash your hands.",
                     colour=0xf1c40f
-                ).set_footer(icon_url=message.author.avatar_url_as(size=64))
-                                          .set_author(icon_url=message.guild.icon_url_as(size=128),
+                ).set_footer(icon_url=message.author.avatar.replace(size=64).url)
+                                          .set_author(icon_url=message.guild.icon.replace(size=128).url,
                                                       name=f"{message.guild.name}"))
             except discord.HTTPException:
                 pass
@@ -934,7 +934,7 @@ class Scanner(commands.Cog):
                 timestamp=time,
                 description=message.content,
                 title=f"Message from **{message.author}** in **{message.channel}**"
-            ).set_footer(icon_url=message.author.avatar_url_as(size=64), text=f"User ID: {message.author.id}")
+            ).set_footer(icon_url=message.author.avatar.replace(size=64).url, text=f"User ID: {message.author.id}")
             embed.add_field(name="Time", value=message.created_at.strftime("%#d %B %Y, %I:%M %p UTC"))
             embed.add_field(name="Message Location", value=f"[Jump]({jump})")
             embed.add_field(name="Mention", value=mention)
@@ -944,7 +944,7 @@ class Scanner(commands.Cog):
                 string += f"**__{k}__**:\n{temp}\n\n"
             embed.add_field(inline=False, name="Problematic Words", value=string)
             if delete:
-                embed.set_author(icon_url=message.guild.icon_url_as(size=128), name="Automatic message deletion")
+                embed.set_author(icon_url=message.guild.icon.replace(size=128).url, name="Automatic message deletion")
 
             for i in location:
                 if i.data['trigger']:
@@ -1021,8 +1021,8 @@ class Scanner(commands.Cog):
                     timestamp=time,
                     description=f"Use of **{reason}** are banned, even in edited messages.",
                     colour=0xf1c40f
-                ).set_footer(icon_url=after.author.avatar_url_as(size=64))
-                                          .set_author(icon_url=after.guild.icon_url_as(size=128),
+                ).set_footer(icon_url=after.author.avatar.replace(size=64).url)
+                                          .set_author(icon_url=after.guild.icon.replace(size=128).url,
                                                       name=f"{after.guild.name}"))
             except discord.HTTPException:
                 pass
@@ -1032,7 +1032,7 @@ class Scanner(commands.Cog):
                 colour=0xe74c3c,
                 timestamp=time,
                 title=f"Message from **{after.author}** in **{after.channel}**"
-            ).set_footer(icon_url=after.author.avatar_url_as(size=64), text=f"User ID: {after.author.id}")
+            ).set_footer(icon_url=after.author.avatar.replace(size=64).url, text=f"User ID: {after.author.id}")
             embed.add_field(inline=False, name="Message Before:", value=before.content)
             embed.add_field(inline=False, name="Message Edited to:", value=after.content)
             embed.add_field(name="Time", value=after.created_at.strftime("%#d %B %Y, %I:%M %p UTC"))
@@ -1044,7 +1044,7 @@ class Scanner(commands.Cog):
                 string += f"**__{k}__**:\n{temp}\n\n"
             embed.add_field(inline=False, name="Problematic Words", value=string)
             if delete:
-                embed.set_author(icon_url=after.guild.icon_url_as(size=128), name="Automatic message deletion")
+                embed.set_author(icon_url=after.guild.icon.replace(size=128).url, name="Automatic message deletion")
 
             for i in location:
                 if i.data['trigger']:

@@ -5,7 +5,7 @@ from discord.ext import commands
 from Components.MangoPi import MangoPi
 
 
-def setup(bot: MangoPi):
+async def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
@@ -14,11 +14,11 @@ def setup(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to add Cog
     """
-    bot.add_cog(Warn(bot))
+    await bot.add_cog(Warn(bot))
     print("Load Cog:\tWarn")
 
 
-def teardown(bot: MangoPi):
+async def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
@@ -27,7 +27,7 @@ def teardown(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to remove Cog
     """
-    bot.remove_cog("Warn")
+    await bot.remove_cog("Warn")
     print("Unload Cog:\tWarn")
 
 
@@ -112,8 +112,8 @@ class Warn(commands.Cog):
                 timestamp=ctx.message.created_at,
                 description=reason,
                 colour=0xd63031
-            ).set_footer(icon_url=target.avatar_url_as(size=64), text=f"{data} offenses")
-                              .set_author(icon_url=ctx.guild.icon_url_as(size=64), name=f"{ctx.guild.name}"))
+            ).set_footer(icon_url=target.avatar.replace(size=64).url, text=f"{data} offenses")
+                              .set_author(icon_url=ctx.guild.icon.replace(size=64).url, name=f"{ctx.guild.name}"))
             await ctx.message.add_reaction(emoji='👍')
         except discord.HTTPException:
             await ctx.reply("Warning stored in system, however, can not warn the target via DM.")
@@ -187,11 +187,11 @@ class Warn(commands.Cog):
                 embed = discord.Embed(
                     colour=target.colour,
                     timestamp=ctx.message.created_at
-                ).set_author(icon_url=str(target.avatar_url_as(size=64)), name=f"{target} Warn List")
+                ).set_author(icon_url=target.avatar.replace(size=64).url, name=f"{target} Warn List")
             elif isinstance(target, discord.User):
                 embed = discord.Embed(
                     timestamp=ctx.message.created_at
-                ).set_author(icon_url=str(target.avatar_url_as(size=64)), name=f"{target} Warn List")
+                ).set_author(icon_url=target.avatar.replace(size=64).url, name=f"{target} Warn List")
             else:
                 embed = discord.Embed(
                     timestamp=ctx.message.created_at,

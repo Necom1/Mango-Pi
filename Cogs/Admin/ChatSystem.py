@@ -7,7 +7,7 @@ from Components.MangoPi import MangoPi, is_admin
 from Components.MessageTools import embed_message, send_message
 
 
-def setup(bot: MangoPi):
+async def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
@@ -16,11 +16,11 @@ def setup(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to add Cog
     """
-    bot.add_cog(ChatSystem(bot))
+    await bot.add_cog(ChatSystem(bot))
     print("Load Cog:\tChatSystem")
 
 
-def teardown(bot: MangoPi):
+async def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
@@ -29,7 +29,7 @@ def teardown(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to remove Cog
     """
-    bot.remove_cog("ChatSystem")
+    await bot.remove_cog("ChatSystem")
     print("Unload Cog:\tChatSystem")
 
 

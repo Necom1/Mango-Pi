@@ -7,7 +7,7 @@ from discord.ext import commands
 from Components.MangoPi import MangoPi
 
 
-def setup(bot: MangoPi):
+async def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
@@ -16,11 +16,11 @@ def setup(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to add Cog
     """
-    bot.add_cog(Normal(bot))
+    await bot.add_cog(Normal(bot))
     print("Load Cog:\tNormal")
 
 
-def teardown(bot: MangoPi):
+async def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
@@ -29,7 +29,7 @@ def teardown(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to remove Cog
     """
-    bot.remove_cog("Normal")
+    await bot.remove_cog("Normal")
     print("Unload Cog:\tNormal")
 
 
@@ -57,7 +57,7 @@ class Normal(commands.Cog):
             discord.VerificationLevel.low: "visa? 📧",
             discord.VerificationLevel.medium: "5 minutes and older only ⌛",
             discord.VerificationLevel.high: "Wait 10 minute, have some tea ⏲💬",
-            discord.VerificationLevel.extreme: "Can I have your number? 📱"
+            discord.VerificationLevel.highest: "Can I have your number? 📱"
         }
 
     async def cog_check(self, ctx: commands.Context):
@@ -101,7 +101,7 @@ class Normal(commands.Cog):
             title="Bot's Current Latency:",
             timestamp=ctx.message.created_at,
             colour=c)
-        embed.set_footer(text=self.bot.user.name, icon_url=self.bot.user.avatar_url_as(size=64))
+        embed.set_footer(text=self.bot.user.name, icon_url=self.bot.user.avatar.replace(size=64).url)
         embed.add_field(name="Discord Ping:", value=f"{web} ms")
         embed.add_field(name="Estimated Ping: ", value=f"{ping} ms")
 
@@ -146,8 +146,8 @@ class Normal(commands.Cog):
             )
 
             embed.set_author(name=f"Found User!")
-            embed.set_thumbnail(url=str(member.avatar_url_as(size=256)))
-            embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url_as(size=64))
+            embed.set_thumbnail(url=member.avatar.replace(size=256).url)
+            embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar.replace(size=64).url)
 
             embed.add_field(name="Name:", value=member.name, inline=False)
             embed.add_field(name="Mention:", value=member.mention, inline=False)
@@ -168,8 +168,8 @@ class Normal(commands.Cog):
                 timestamp=ctx.message.created_at
             )
 
-            embed.set_thumbnail(url=member.avatar_url_as(size=256))
-            embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url_as(size=64))
+            embed.set_thumbnail(url=member.avatar.replace(size=256).url)
+            embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar.replace(size=64).url)
 
             embed.add_field(name="Mention", value=member.mention)
             embed.add_field(name="ID:", value=member.id)
@@ -201,8 +201,8 @@ class Normal(commands.Cog):
                 colour=0xecf0f1,
                 timestamp=ctx.message.created_at,
                 title=f"Server Banner for {ctx.guild}"
-            ).set_image(url=ctx.guild.banner_url_as(size=2048, format='png'))
-                           .set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url_as(size=64)))
+            ).set_image(url=ctx.guild.banner.replace(size=2048, format='png').url)
+                           .set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar.replace(size=64).url))
 
     @commands.command(aliases=['sicon', 'spfp'])
     @commands.guild_only()
@@ -212,8 +212,8 @@ class Normal(commands.Cog):
             colour=0xecf0f1,
             title=f"Server Icon for {ctx.guild}",
             timestamp=ctx.message.created_at
-        ).set_image(url=ctx.guild.icon_url_as(static_format="png", size=1024))
-                       .set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url_as(size=64)))
+        ).set_image(url=ctx.guild.icon.replace(size=1024).url)
+                       .set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar.replace(size=64).url))
 
     @commands.command(aliases=['splash', 'sSplash'])
     @commands.guild_only()
@@ -226,8 +226,8 @@ class Normal(commands.Cog):
                 timestamp=ctx.message.created_at,
                 colour=0xecf0f1,
                 title=f"Invite Splash Screen for {ctx.guild}"
-            ).set_image(url=ctx.guild.splash_url_as(size=2048, format='png'))
-                    .set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url_as(size=64)))
+            ).set_image(url=ctx.guild.splash.replace(size=2048, format='png').url)
+                    .set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar.replace(size=64).url))
 
     @commands.command(aliases=["sinfo"])
     @commands.guild_only()
@@ -259,7 +259,7 @@ class Normal(commands.Cog):
             title="𝕊𝕖𝕣𝕧𝕖𝕣 𝕀𝕟𝕗𝕠" if not server.large else "🅱🅸🅶 🆂🅴🆁🆅🅴🆁 🅸🅽🅵🅾"
         )
         embed.add_field(name="Server Name (ID)", value=f"{server.name} ({server.id})")
-        embed.set_thumbnail(url=f"{server.icon_url_as(static_format='png', size=256)}")
+        embed.set_thumbnail(url=f"{server.icon.replace(static_format='png', size=256).url}")
         embed.add_field(name="Owner", value=server.get_member(server.owner_id).mention, inline=False)
         embed.add_field(name="Member Count", value=str(len(server.members)))
         embed.add_field(name="Booster Count", value=server.premium_subscription_count)
@@ -277,9 +277,9 @@ class Normal(commands.Cog):
                         value=server.created_at.strftime("%#d %B %Y, %I:%M %p UTC"), inline=False)
 
         if server.banner is not None:
-            embed.set_image(url=server.banner_url_as(format='png', size=2048))
+            embed.set_image(url=server.banner.replace(format='png', size=2048).url)
 
-        embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url_as(size=64))
+        embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar.replace(size=64).url)
 
         await ctx.reply(embed=embed)
 
@@ -321,7 +321,7 @@ class Normal(commands.Cog):
         original = discord.Embed(
             colour=0x1abc9c,
             timestamp=ctx.message.created_at
-        ).set_author(icon_url=ctx.guild.icon_url, name=f"{ctx.guild.name} | Emote List")
+        ).set_author(icon_url=ctx.guild.icon.replace(size=128, static_format="png").url, name=f"{ctx.guild.name} | Emote List")
 
         send = []
 
@@ -355,7 +355,7 @@ class Normal(commands.Cog):
         )
         embed.set_author(name=f"Hi! I am {self.bot.user.name}!",
                          icon_url="https://icons.iconarchive.com/icons/cornmanthe3rd/plex/128/Other-python-icon.png")
-        embed.set_thumbnail(url=self.bot.user.avatar_url_as(size=256))
+        embed.set_thumbnail(url=self.bot.user.avatar.replace(size=256).url)
         creator = await self.bot.fetch_user(267909205225242624)
         embed.add_field(name="Bot Master", value=self.bot.app_info.owner.mention)
         details = self.bot.data.staff

@@ -4,7 +4,7 @@ from discord.ext import commands
 from Components.MangoPi import highest_role_position
 
 
-def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot):
     """
     Function necessary for loading Cogs.
 
@@ -13,11 +13,11 @@ def setup(bot: commands.Bot):
     bot : commands.Bot
         pass in bot reference to add Cog
     """
-    bot.add_cog(AntiSlash(bot))
+    await bot.add_cog(AntiSlash(bot))
     print("Load Cog:\tAntiSlash")
 
 
-def teardown(bot: commands.Bot):
+async def teardown(bot: commands.Bot):
     """
     Function to be called upon unloading this Cog.
 
@@ -26,7 +26,7 @@ def teardown(bot: commands.Bot):
     bot : commands.Bot
         pass in bot reference to remove Cog
     """
-    bot.remove_cog("AntiSlash")
+    await bot.remove_cog("AntiSlash")
     print("Unload Cog:\tAntiSlash")
 
 

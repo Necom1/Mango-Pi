@@ -7,7 +7,7 @@ from Components.MuteTimer import MuteTimer, remove_mute
 from Components.DelayedTask import time_converter, range_calculator
 
 
-def setup(bot: MangoPi):
+async def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
@@ -16,11 +16,11 @@ def setup(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to add Cog
     """
-    bot.add_cog(Mute(bot))
+    await bot.add_cog(Mute(bot))
     print("Load Cog:\tMute")
 
 
-def teardown(bot: MangoPi):
+async def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
@@ -29,7 +29,7 @@ def teardown(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to remove Cog
     """
-    bot.remove_cog("Mute")
+    await bot.remove_cog("Mute")
     print("Unload Cog:\tMute")
 
 
@@ -194,8 +194,8 @@ class Mute(commands.Cog):
             embed.add_field(inline=False, name="End", value=duration)
             embed.add_field(inline=False, name="Reason", value=reason)
             if data:
-                embed.set_footer(icon_url=target.avatar_url_as(size=64), text=f"{data} offenses")
-            embed.set_author(icon_url=ctx.guild.icon_url_as(size=128), name=f"{ctx.guild.name}")
+                embed.set_footer(icon_url=target.avatar.replace(size=64).url, text=f"{data} offenses")
+            embed.set_author(icon_url=ctx.guild.icon.replace(size=128).url, name=f"{ctx.guild.name}")
             await target.send("🔇 You have been muted 🔇" if not change else "➕  Mute Time Changed",
                               embed=embed)
         except discord.HTTPException:
@@ -441,7 +441,7 @@ class Mute(commands.Cog):
                 timestamp=ctx.message.created_at,
                 colour=0x95afc0
             ).add_field(name="Member", value=target.mention).add_field(name="Duration", value=time_str, inline=False)
-                           .add_field(name="Reason", value=reason, inline=False).set_thumbnail(url=target.avatar_url))
+                           .add_field(name="Reason", value=reason, inline=False).set_thumbnail(url=target.avatar.url))
             await self.tell(ctx, target, reason, time_str)
         else:
             original = data.end
@@ -512,7 +512,7 @@ class Mute(commands.Cog):
         embed = discord.Embed(
             colour=0x58B19F,
             timestamp=ctx.message.created_at
-        ).set_author(name="Timed Mute List", icon_url=ctx.guild.icon_url)
+        ).set_author(name="Timed Mute List", icon_url=ctx.guild.icon.replace(size=64).url)
         embed.set_footer(text=f"Page {page} / {total}")
 
         for i in range(start, end):

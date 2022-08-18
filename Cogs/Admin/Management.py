@@ -5,7 +5,7 @@ from discord.ext import commands
 from Components.MangoPi import MangoPi, is_admin
 
 
-def setup(bot: MangoPi):
+async def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
@@ -14,11 +14,11 @@ def setup(bot: MangoPi):
     bot : MangoPi
         pass in MangoPi bot reference to add Cog
     """
-    bot.add_cog(Management(bot))
+    await bot.add_cog(Management(bot))
     print("Load Cog:\tManagement")
 
 
-def teardown(bot: MangoPi):
+async def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
@@ -27,7 +27,7 @@ def teardown(bot: MangoPi):
     bot : MangoPi
         pass in MangoPi bot reference to remove Cog
     """
-    bot.remove_cog("Management")
+    await bot.remove_cog("Management")
     print("Unload Cog:\tManagement")
 
 
@@ -64,7 +64,7 @@ class Management(commands.Cog):
             colour=0xFFB300,
             title="System Cog Status",
             timestamp=ctx.message.created_at
-        ).set_footer(icon_url=self.bot.user.avatar_url, text="")
+        ).set_footer(icon_url=self.bot.user.avatar.replace(size=64).url, text="")
         embed.add_field(name=f"Active Cogs [{len(self.bot.loaded_cogs)}]",
                         value="\n".join(loaded) if len(loaded) > 0 else "None", inline=False)
         embed.add_field(name=f"Inactive Cogs [{len(self.bot.unloaded_cogs)}]",

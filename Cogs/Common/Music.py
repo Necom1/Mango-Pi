@@ -8,7 +8,7 @@ from discord.ext import commands
 from Components.MangoPi import MangoPi
 
 
-def setup(bot: MangoPi):
+async def setup(bot: MangoPi):
     """
     Essential function for Cog loading that calls the update method of MusicPlayer Cog (to fetch data from Mongo)
     before adding it to the bot.
@@ -17,11 +17,11 @@ def setup(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to append the Cog
     """
-    bot.add_cog(Music(bot))
+    await bot.add_cog(Music(bot))
     print("Load Cog:\tMusicPlayer")
 
 
-def teardown(bot: MangoPi):
+async def teardown(bot: MangoPi):
     """
     Method for Cog unload, this function will print to Console that MusicPlayer Cog got unload.
     Parameters
@@ -29,7 +29,7 @@ def teardown(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to unload the Cog
     """
-    bot.remove_cog("Music")
+    await bot.remove_cog("Music")
     print("Unload Cog:\tMusic")
 
 
@@ -467,9 +467,10 @@ class Music(commands.Cog):
         if not player.repeat:
             try:
                 player.queue.pop(0)
-                if len(player.queue) < 1:
-                    return
             except IndexError:
                 return
 
-        await player.play(player.queue[0])
+        if len(player.queue) > 0:
+            await player.play(player.queue[0])
+        else:
+            await player.stop()

@@ -3,7 +3,7 @@ from discord.ext import commands
 from Components.MangoPi import MangoPi
 
 
-def setup(bot: MangoPi):
+async def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs. This will update Prefix's data from mongoDB and append get_prefix to
     bot command_prefix.
@@ -15,12 +15,12 @@ def setup(bot: MangoPi):
     """
     temp = Prefix(bot)
     temp.update()
-    bot.add_cog(temp)
+    await bot.add_cog(temp)
     bot.command_prefix = temp.get_prefix
     print("Load Cog:\tPrefix")
 
 
-def teardown(bot: MangoPi):
+async def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog. This will restore bot command_prefix to bot default.
 
@@ -30,7 +30,7 @@ def teardown(bot: MangoPi):
         pass in bot reference to remove Cog and restore command_prefix
     """
     bot.command_prefix = commands.when_mentioned_or(bot.default_prefix)
-    bot.remove_cog("Prefix")
+    await bot.remove_cog("Prefix")
     print("Unload Cog:\tPrefix")
 
 
@@ -78,17 +78,20 @@ class Prefix(commands.Cog):
             Method to pass into bot.command_prefix
         """
         default = client.default_prefix
-        if not message.guild:
-            # if message not from a server
-            return commands.when_mentioned_or(default)(client, message)
 
         try:
+            if not message.guild:
+                raise KeyError("default")
+                
             prefix = self.prefix[message.guild.id]
+            
+            if not prefix:
+                raise KeyError("default")
         except KeyError:
-            prefix = None
+            return commands.when_mentioned_or(default)(client, message)
 
-        return commands.when_mentioned_or(default)(client, message) if not prefix else \
-            commands.when_mentioned_or(prefix)(client, message)
+        # custom prefix
+        return commands.when_mentioned_or(prefix)(client, message)
 
     def update(self):
         """
@@ -114,7 +117,7 @@ class Prefix(commands.Cog):
                 data = None
 
             if data is None:
-                await ctx.reply("The default **[]**")
+                await ctx.reply(f"The default **{self.bot.default_prefix}**")
             else:
                 await ctx.reply(f"Prefix for this server is **{data}**")
 

@@ -148,8 +148,13 @@ class MangoPi(commands.Bot):
             bans=True,
             emojis=True,
             voice_states=True,
+            dm_messages=True,
+            dm_reactions=True,
+            guild_messages=True,
+            guild_reactions=True,
             messages=True,
-            guild_reactions=True
+            message_content=True,
+            # invites=True,
         )
 
         super().__init__(self, help_command=CustomHelpCommand(), prefix=commands.when_mentioned_or(data.prefix),
@@ -168,7 +173,7 @@ class MangoPi(commands.Bot):
 
         self.run(data.bot_token)
 
-    def _load_all_cogs(self, location: str = './Cogs', note: str = 'Cogs'):
+    async def _load_all_cogs(self, location: str = './Cogs', note: str = 'Cogs'):
         """
         A protected method that attempt to load cogs within the specified directory.
 
@@ -186,7 +191,7 @@ class MangoPi(commands.Bot):
                 if not i.startswith('__'):
                     new_location = f"{location}/{i}"
                     new_note = f"{note}.{i}"
-                    self._load_all_cogs(new_location, new_note)
+                    await self._load_all_cogs(new_location, new_note)
 
             for i in files:
                 if i.endswith(".py") and not i.startswith("!") and i.replace(".py", "") not in self.loaded_cogs.keys():
@@ -194,7 +199,7 @@ class MangoPi(commands.Bot):
                     temp = f"{note}.{element}"
 
                     try:
-                        self.load_extension(temp)
+                        await self.load_extension(temp)
                         self.loaded_cogs[element] = temp
                     except commands.NoEntryPointError:
                         print(f"{Colors.FAIL}failed to load, missing setup function{Colors.FAIL}")
@@ -214,7 +219,7 @@ class MangoPi(commands.Bot):
             self.data = BotData(self)
 
             print(f"Attempting to load all Cogs\n{self._separator}")
-            self._load_all_cogs()
+            await self._load_all_cogs()
 
             print("=========================================================\n"
                   "\t\tSuccessfully logged into Discord\n"

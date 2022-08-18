@@ -5,7 +5,7 @@ from discord.ext import commands
 from Components.MangoPi import MangoPi, is_admin
 
 
-def setup(bot: MangoPi):
+async def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
@@ -14,11 +14,11 @@ def setup(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to add Cog
     """
-    bot.add_cog(BotConfig(bot))
+    await bot.add_cog(BotConfig(bot))
     print("Load Cog:\tBotConfig")
 
 
-def teardown(bot: MangoPi):
+async def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
@@ -27,7 +27,7 @@ def teardown(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to remove Cog
     """
-    bot.remove_cog("BotConfig")
+    await bot.remove_cog("BotConfig")
     print("Unload Cog:\tBotConfig")
 
 
@@ -388,7 +388,7 @@ class BotConfig(commands.Cog):
                 colour=0x1dd1a1,
                 title="Activities For RSA"
             )
-            embed.set_footer(icon_url=self.bot.user.avatar_url_as(size=64),
+            embed.set_footer(icon_url=self.bot.user.avatar.replace(size=64).url,
                              text=f"{page} / {int((len(data) // 10)) + 1} Pages")
 
             await ctx.reply(embed=embed)

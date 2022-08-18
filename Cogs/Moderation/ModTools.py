@@ -17,7 +17,7 @@ from Components.MangoPi import MangoPi
 # https://discordpy.readthedocs.io/
 
 
-def setup(bot: MangoPi):
+async def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
@@ -26,11 +26,11 @@ def setup(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to add Cog
     """
-    bot.add_cog(ModTools(bot))
+    await bot.add_cog(ModTools(bot))
     print("Load Cog:\tModTools")
 
 
-def teardown(bot: MangoPi):
+async def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
@@ -39,7 +39,7 @@ def teardown(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to remove Cog
     """
-    bot.remove_cog("ModTools")
+    await bot.remove_cog("ModTools")
     print("Unload Cog:\tModTools")
 
 
@@ -161,7 +161,7 @@ class ModTools(commands.Cog):
             description=f"{deleted} messages{special}have been deleted from **{ctx.channel}**.",
             timestamp=ctx.message.created_at
         )
-        embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar_url_as(size=64))
+        embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar.replace(size=64).url)
         await ctx.send(embed=embed, delete_after=8)
 
     # if an error occurs when using clear command
@@ -194,7 +194,7 @@ class ModTools(commands.Cog):
                 title="👮 No Permission", colour=0x34ace0,
                 description='You will need the permission of [Manage Messages] to use this command.'
             )
-            embed.set_footer(text=f"Input by {ctx.author}", icon_url=ctx.author.avatar_url)
+            embed.set_footer(text=f"Input by {ctx.author}", icon_url=ctx.author.avatar.replace(size=64).url)
             return await ctx.reply(embed=embed, delete_after=10)
         elif isinstance(error, discord.Forbidden):
             if nope:

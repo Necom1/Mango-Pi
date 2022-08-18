@@ -3,7 +3,7 @@ from discord.ext import commands
 from Components.MangoPi import MangoPi, offline
 
 
-def setup(bot: MangoPi):
+async def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs. This will update Ignore data from mongoDB.
 
@@ -14,12 +14,12 @@ def setup(bot: MangoPi):
     """
     temp = Ignore(bot)
     temp.update()
-    bot.add_cog(temp)
+    await bot.add_cog(temp)
     bot.ignore_check = temp.ignore_check
     print("Load Cog:\tIgnore")
 
 
-def teardown(bot: MangoPi):
+async def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
@@ -28,7 +28,7 @@ def teardown(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to remove Cog
     """
-    bot.remove_cog("Ignores")
+    await bot.remove_cog("Ignores")
     bot.ignore_check = offline
     print("Unload Cog:\tIgnore")
 
@@ -153,7 +153,7 @@ class Ignore(commands.Cog):
                 colour=0x1289A7,
                 description=display,
                 timestamp=ctx.message.created_at
-            ).set_thumbnail(url=ctx.guild.icon_url)
+            ).set_thumbnail(url=ctx.guild.icon.url)
 
             if len(display) <= 0:
                 await ctx.reply("I take commands from all channels")

@@ -129,8 +129,8 @@ class RaidFilter:
                 colour=0xe056fd,
                 title="Potential Raider",
                 timestamp=k.joined_at
-            ).set_footer(text="Joined", icon_url=self.server.icon_url_as(size=64))
-            embed.set_thumbnail(url=k.avatar_url)
+            ).set_footer(text="Joined", icon_url=self.server.icon.replace(size=64).url)
+            embed.set_thumbnail(url=k.avatar.url)
             embed.add_field(name="Mention", value=k.mention)
             embed.add_field(name="ID", value=k.id)
             await self.notification(embed)
@@ -151,7 +151,7 @@ class RaidFilter:
                 timestamp=datetime.datetime.utcnow(),
                 description=f"No new joins within {self.timeout} seconds, system back to green." if not manual else
                 "System back to green, raid alert stopped manually."
-            ).set_footer(text="Lockdown lifted @", icon_url=self.server.icon_url_as(size=64))
+            ).set_footer(text="Lockdown lifted @", icon_url=self.server.icon.replace(size=64).url)
             await self.notification(embed)
 
     async def notification(self, message: typing.Union[discord.Embed, str]):

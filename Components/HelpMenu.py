@@ -232,7 +232,7 @@ class CustomHelpCommand(HelpCommand):
             commands = sorted(commands, key=lambda c: c.name) if self.sort_commands else list(commands)
             self.paginator.add_commands(category, commands)
 
-        special = list(self.paginator.finalize(bot.user.avatar_url_as(size=64)))
+        special = list(self.paginator.finalize(bot.user.avatar.replace(size=64).url))
         if self.context.channel.type != discord.ChannelType.private:
             await self.interactive(special)
         else:
@@ -280,7 +280,7 @@ class CustomHelpCommand(HelpCommand):
 
         filtered = await self.filter_commands(group.commands, sort=self.sort_commands)
         result = process_command_list(embed, filtered)
-        icon = self.context.bot.user.avatar_url_as(size=64)
+        icon = self.context.bot.user.avatar.replace(size=64).url
 
         for i in range(len(result)):
             result[i].set_footer(icon_url=icon, text=f"{i + 1} / {len(result)} Pages")
@@ -304,7 +304,7 @@ class CustomHelpCommand(HelpCommand):
 
         filtered = await self.filter_commands(cog.get_commands(), sort=self.sort_commands)
         result = process_command_list(embed, filtered)
-        icon = self.context.bot.user.avatar_url_as(size=64)
+        icon = self.context.bot.user.avatar.replace(size=64).url
 
         for i in range(len(result)):
             result[i].set_footer(icon_url=icon, text=f"{i + 1} / {len(result)} Pages")

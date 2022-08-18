@@ -99,12 +99,12 @@ def embed_message(bot: Bot, message: discord.Message, jump: bool = False):
         colour=0xdff9fb if is_dm else message.author.color,
         timestamp=message.created_at
     )
-    embed.set_footer(text=f"User ID: {message.author.id}", icon_url=message.author.avatar_url_as(size=64))
+    embed.set_footer(text=f"User ID: {message.author.id}", icon_url=message.author.avatar.replace(size=64).url)
 
     if is_dm:
         embed.set_author(name=f"Received DM from {message.author.name}")
     else:
-        embed.set_author(icon_url=message.guild.icon_url_as(size=128),
+        embed.set_author(icon_url=message.guild.icon.replace(size=128).url,
                          name=f"Message from {message.author.name} in {message.guild}")
 
     if jump:

@@ -6,7 +6,7 @@ from Components.MangoPi import MangoPi
 from Components.RoleSelector import RoleSelector
 
 
-def setup(bot: MangoPi):
+async def setup(bot: MangoPi):
     """
     Function necessary for loading Cogs.
 
@@ -15,11 +15,11 @@ def setup(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to add Cog
     """
-    bot.add_cog(RoleMenu(bot))
+    await bot.add_cog(RoleMenu(bot))
     print("Load Cog:\tRoleMenu")
 
 
-def teardown(bot: MangoPi):
+async def teardown(bot: MangoPi):
     """
     Function to be called upon unloading this Cog.
 
@@ -28,7 +28,7 @@ def teardown(bot: MangoPi):
     bot : MangoPi
         pass in bot reference to remove Cog
     """
-    bot.remove_cog("RoleMenu")
+    await bot.remove_cog("RoleMenu")
     print("Unload Cog:\tRoleMenu")
 
 
@@ -179,7 +179,7 @@ class RoleMenu(commands.Cog):
             title="List of role menu(s):" if not name else f"Emotes and Roles in {name}",
             description=temp,
             timestamp=ctx.message.created_at
-        ).set_footer(icon_url=self.bot.user.avatar_url_as(size=64), text=f"{size} item(s)")
+        ).set_footer(icon_url=self.bot.user.avatar.replace(size=64).url, text=f"{size} item(s)")
         if name:
             embed.add_field(name="Mode", value="Single" if not data.multiple else "Multiple", inline=False)
         if name and data.message:
