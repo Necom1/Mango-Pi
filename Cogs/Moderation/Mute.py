@@ -464,7 +464,7 @@ class Mute(commands.Cog):
                 timestamp=ctx.message.created_at,
                 colour=0x95afc0
             ).add_field(name="Member", value=target.mention).add_field(name="Duration Changed To", value=time1)
-                           .add_field(name="Reason", value=reason).set_thumbnail(url=target.avatar_url))
+                           .add_field(name="Reason", value=reason).set_thumbnail(url=target.avatar.url))
             await self.tell(ctx, target, reason, time_str, True)
 
     @commands.command()

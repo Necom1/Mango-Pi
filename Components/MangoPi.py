@@ -364,7 +364,7 @@ class MangoPi(commands.Bot):
                     await i.send(f"Error Traceback Page **{count}**:\n```py\n{k}\n```")
                     count += 1
 
-        await ctx.message.add_reaction(emoji='⚠')
         # https://github.com/Rapptz/discord.py/blob/master/discord/ext/commands/bot.py
         print(f'Ignoring exception in command {ctx.command}:', file=sys.stderr)
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+        await ctx.message.add_reaction(emoji='⚠')

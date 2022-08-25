@@ -84,8 +84,8 @@ class Management(commands.Cog):
             return await ctx.reply(f"No loaded Cog with the name: {cog}")
 
         try:
-            self.bot.unload_extension(target)
-            self.bot.load_extension(target)
+            await self.bot.unload_extension(target)
+            await self.bot.load_extension(target)
             embed = discord.Embed(
                 title="COG Reloaded ♻", colour=0x1dd1a1, timestamp=ctx.message.created_at,
                 description=f"[**{cog}**] module got reloaded!")
@@ -105,7 +105,7 @@ class Management(commands.Cog):
             return await ctx.reply(f"No unloaded Cog with the name: {cog}")
 
         try:
-            self.bot.load_extension(target)
+            await self.bot.load_extension(target)
             embed = discord.Embed(
                 title="COG Loaded ↪", colour=0x12CBC4, timestamp=ctx.message.created_at,
                 description=f"[**{cog}**] module has been loaded!")
@@ -129,7 +129,7 @@ class Management(commands.Cog):
             return await ctx.reply(f"No loaded Cog with the name: {cog}")
 
         try:
-            self.bot.unload_extension(target)
+            await self.bot.unload_extension(target)
             embed = discord.Embed(
                 title="COG Unloaded ⬅", colour=0xEA2027, timestamp=ctx.message.created_at,
                 description=f"[**{cog}**] module got unloaded!")
@@ -139,6 +139,15 @@ class Management(commands.Cog):
             print(f"**{cog}** failed to unload:")
             await ctx.reply(f"```py\n{traceback.format_exc()}\n```")
             raise ex
+
+    @commands.command()
+    @commands.check(is_admin)
+    async def command_sync(self, ctx: commands.Context, guild: discord.Guild = None):
+        """Sync the bot's current slash commands to ones stored on Discord"""
+        guild = guild.id if guild else None
+        msg = await ctx.reply("Syncing slash commands to all servers in progress...")
+        await self.bot.tree.sync(guild)
+        await msg.edit(context="Finished sync, may take a while to show up on Discord itself.")
 
     @commands.group(aliases=["sm"])
     @commands.is_owner()

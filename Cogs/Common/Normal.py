@@ -77,7 +77,7 @@ class Normal(commands.Cog):
         return not self.bot.ignore_check(ctx)
 
     # get bot connection command
-    @commands.command(aliases=["connection"])
+    @commands.hybrid_command(aliases=["connection"])
     async def ping(self, ctx: commands.Context):
         """Checks bot's Discord connection ping and process ping."""
         # Reference: https://stackoverflow.com/questions/46307035/ping-command-with-discord-py
@@ -113,7 +113,7 @@ class Normal(commands.Cog):
         """Return the avatar of the target user."""
         person = ctx.author if not target else target
 
-        link = person.avatar_url
+        link = person.avatar.url
         embed = discord.Embed(
             timestamp=ctx.message.created_at,
             title=f"{person.name}'s Avatar:",
@@ -263,7 +263,6 @@ class Normal(commands.Cog):
         embed.add_field(name="Owner", value=server.get_member(server.owner_id).mention, inline=False)
         embed.add_field(name="Member Count", value=str(len(server.members)))
         embed.add_field(name="Booster Count", value=server.premium_subscription_count)
-        embed.add_field(name="Region", value=server.region)
         embed.add_field(name="Filter", value=server.explicit_content_filter)
         embed.add_field(name="Security Level",
                         value=f"{self.verification_level[server.verification_level]}" +

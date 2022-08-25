@@ -654,7 +654,7 @@ class Logging(commands.Cog):
                         f"shadow realm!"
         )
         embed.set_footer(text="Banned")
-        embed.set_thumbnail(url=user.avatar_url)
+        embed.set_thumbnail(url=user.avatar.url)
         embed.set_author(name="🔨 Banned!", icon_url=guild.icon.replace(size=64).url)
         embed.add_field(name="User ID", value=user.id)
 
