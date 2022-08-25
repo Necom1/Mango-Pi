@@ -1,5 +1,4 @@
 # Mango Pi
-[![](https://img.shields.io/badge/MangoPi-Invite-7289DA)](https://discord.com/oauth2/authorize?client_id=594781459001376768&scope=bot&permissions=1543892182)
 [![](https://img.shields.io/badge/License-MIT-00cec9)](https://choosealicense.com/licenses/mit/)
 
 Moderation Discord bot made with Discord.py, MongoDB, and Lavalink.
