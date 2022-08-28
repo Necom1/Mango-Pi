@@ -591,20 +591,20 @@ class Logging(commands.Cog):
         async for entry in member.guild.audit_logs(
             action=discord.AuditLogAction.kick, after=(datetime.datetime.utcnow() - datetime.timedelta(minutes=1))
         ):
-            if entry.target.id == member.id and entry.action == discord.AuditLogAction.kick:
+            if entry.target.id == member.id:
                 kicked = discord.Embed(
                 colour=0xe74c3c,
                 timestamp=entry.created_at,
                 description=f"**{entry.target.name}** got drop kicked out of **{member.guild}**!"
-            )
-            kicked.set_thumbnail(url=member.avatar.url)
-            kicked.set_author(name="👢 Booted!", icon_url=member.guild.icon.replace(size=64).url)
-            kicked.set_footer(text="Kicked")
-            kicked.add_field(inline=False, name="Kicked by:", value=entry.user.mention)
-            kicked.add_field(inline=False, name="Reason:", value=entry.reason)
-            kicked.add_field(name="User ID", value=member.id)
-            kicked.add_field(name="Kick Time", value=entry.created_at.strftime("%#d %B %Y, %I:%M %p UTC"))
-            break
+                )
+                kicked.set_thumbnail(url=member.avatar.url)
+                kicked.set_author(name="👢 Booted!", icon_url=member.guild.icon.replace(size=64).url)
+                kicked.set_footer(text="Kicked")
+                kicked.add_field(inline=False, name="Kicked by:", value=entry.user.mention)
+                kicked.add_field(inline=False, name="Reason:", value=entry.reason)
+                kicked.add_field(name="User ID", value=member.id)
+                kicked.add_field(name="Kick Time", value=entry.created_at.strftime("%#d %B %Y, %I:%M %p UTC"))
+                break
 
         for i in data:
             target = self.bot.get_channel(i.channel)
@@ -639,7 +639,7 @@ class Logging(commands.Cog):
         async for entry in await guild.audit_logs(
             action=discord.AuditLogAction.ban, limit=5
         ):
-            if entry.target.id == user.id and entry.action == discord.AuditLogAction.ban:
+            if entry.target.id == user.id:
                 embed = discord.Embed(
                     timestamp=datetime.datetime.utcnow() if not entry else entry.created_at,
                     colour=0xED4C67,
