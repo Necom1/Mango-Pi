@@ -587,16 +587,12 @@ class Logging(commands.Cog):
                         value=time.strftime("%#d %B %Y, %I:%M %p UTC"))
 
         kicked = None
-
-        def check(e: discord.AuditLogEntry):
-            return e.target.id == member.id and e.action == discord.AuditLogAction.kick
-
-        entry = await member.guild.audit_logs(
+        
+        async for entry in member.guild.audit_logs(
             action=discord.AuditLogAction.kick, after=(datetime.datetime.utcnow() - datetime.timedelta(minutes=1))
-        ).find(check)
-
-        if entry:
-            kicked = discord.Embed(
+        ):
+            if entry.target.id == member.id and entry.action == discord.AuditLogAction.kick:
+                kicked = discord.Embed(
                 colour=0xe74c3c,
                 timestamp=entry.created_at,
                 description=f"**{entry.target.name}** got drop kicked out of **{member.guild}**!"
@@ -608,6 +604,7 @@ class Logging(commands.Cog):
             kicked.add_field(inline=False, name="Reason:", value=entry.reason)
             kicked.add_field(name="User ID", value=member.id)
             kicked.add_field(name="Kick Time", value=entry.created_at.strftime("%#d %B %Y, %I:%M %p UTC"))
+            break
 
         for i in data:
             target = self.bot.get_channel(i.channel)
@@ -638,41 +635,38 @@ class Logging(commands.Cog):
             data = self.memory[guild.id]
         except KeyError:
             return
-
-        # wait for entry to be logged
-        def check(e: discord.AuditLogEntry):
-            return e.target.id == user.id and e.action == discord.AuditLogAction.ban
-
-        entry = await guild.audit_logs(
+        
+        async for entry in await guild.audit_logs(
             action=discord.AuditLogAction.ban, limit=5
-        ).find(check)
+        ):
+            if entry.target.id == user.id and entry.action == discord.AuditLogAction.ban:
+                embed = discord.Embed(
+                    timestamp=datetime.datetime.utcnow() if not entry else entry.created_at,
+                    colour=0xED4C67,
+                    description=f"**{user.name}** got hit by a massive hammer and vanished into the "
+                                f"shadow realm!"
+                )
+                embed.set_footer(text="Banned")
+                embed.set_thumbnail(url=user.avatar.url)
+                embed.set_author(name="🔨 Banned!", icon_url=guild.icon.replace(size=64).url)
+                embed.add_field(name="User ID", value=user.id)
 
-        embed = discord.Embed(
-            timestamp=datetime.datetime.utcnow() if not entry else entry.created_at,
-            colour=0xED4C67,
-            description=f"**{user.name}** got hit by a massive hammer and vanished into the "
-                        f"shadow realm!"
-        )
-        embed.set_footer(text="Banned")
-        embed.set_thumbnail(url=user.avatar.url)
-        embed.set_author(name="🔨 Banned!", icon_url=guild.icon.replace(size=64).url)
-        embed.add_field(name="User ID", value=user.id)
-
-        if entry:
-            embed.add_field(inline=False, name="Banned by:", value=entry.user)
-            embed.add_field(inline=False, name="Reason:", value=entry.reason)
-            embed.add_field(name="Ban Time", value=entry.created_at.strftime("%#d %B %Y, %I:%M %p UTC"))
-        else:
-            embed.add_field(inline=False, name="404 Not Found", value="Failed to fetch ban data from audit log")
-
-        for i in data:
-            if i.data['ban'] and embed:
-                channel = self.bot.get_channel(i.channel)
-                if not channel:
-                    self.db.delete_one({"guild_id": i.guild, "_id": i.channel})
+                if entry:
+                    embed.add_field(inline=False, name="Banned by:", value=entry.user)
+                    embed.add_field(inline=False, name="Reason:", value=entry.reason)
+                    embed.add_field(name="Ban Time", value=entry.created_at.strftime("%#d %B %Y, %I:%M %p UTC"))
                 else:
-                    if embed:
-                        await self.bot.get_channel(i.channel).send(embed=embed)
+                    embed.add_field(inline=False, name="404 Not Found", value="Failed to fetch ban data from audit log")
+
+                for i in data:
+                    if i.data['ban'] and embed:
+                        channel = self.bot.get_channel(i.channel)
+                        if not channel:
+                            self.db.delete_one({"guild_id": i.guild, "_id": i.channel})
+                        else:
+                            if embed:
+                                await self.bot.get_channel(i.channel).send(embed=embed)
+                break
 
     @commands.Cog.listener()
     async def on_member_unban(self, guild: discord.Guild, user: discord.User):
